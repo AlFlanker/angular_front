@@ -86,6 +86,13 @@
   color: #1890ff;
 }
 
+/* Ссылка на тип документа */
+.doc-type-link {
+  color: #1890ff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 /* Стили для ссылки подсистемы */
 .subsystem-link {
   color: #1890ff;
@@ -249,3 +256,4 @@
   white-space: normal;     /* разрешает перенос */
   word-break: break-word;  /* щадящий перенос */
 }
+

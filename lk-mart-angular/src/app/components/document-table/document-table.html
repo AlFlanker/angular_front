@@ -110,7 +110,13 @@
               Тип документа
             </th>
             } @else {
-              <th>Тип документа</th>
+              <th
+                [nzFilters]="docTypeFiltersOptions"
+                [nzFilterMultiple]="true"
+                [nzFilterFn]="true"
+                (nzFilterChange)="onDocTypeFilter($event)">
+                Тип документа
+              </th>
             }
             @if (isColumnSortable('doc_state')) {
             <th
@@ -120,7 +126,13 @@
               Статус
             </th>
             } @else {
-              <th>Статус</th>
+              <th
+                [nzFilters]="docStateFiltersOptions"
+                [nzFilterMultiple]="true"
+                [nzFilterFn]="true"
+                (nzFilterChange)="onDocStateFilter($event)">
+                Статус
+              </th>
             }
             <th>Пользователи</th>
           </tr>
@@ -133,7 +145,11 @@
               <!-- Номер документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography class="doc-num">{{ document.document.docNum }}</span>
+                  <span
+                    nz-typography
+                    class="doc-num"
+                    (click)="onDocNumClick(document, $event)"
+                  >{{ document.document.docNum }}</span>
                 </nz-typography>
               </td>
 
@@ -177,7 +193,11 @@
               <!-- Тип документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography>{{ document.docTypeName }}</span>
+                  <span
+                    nz-typography
+                    class="doc-type-link"
+                    (click)="onDocTypeClick(document); $event.stopPropagation()"
+                  >{{ document.docTypeName }}</span>
                 </nz-typography>
               </td>
 
