@@ -15,7 +15,30 @@
         Документы организации
       </button>
     </div>
-    <div>
+    <div class="filter-selects">
+      <nz-select
+        class="filter-select"
+        nzPlaceHolder="Подсистема"
+        [nzOptions]="subsystemFilterOptions"
+        [(ngModel)]="selectedSubsystem"
+        (ngModelChange)="onSubsystemFilter($event)">
+      </nz-select>
+      <nz-select
+        class="filter-select"
+        nzMode="multiple"
+        nzPlaceHolder="Тип документа"
+        [nzOptions]="docTypeFiltersOptions"
+        [(ngModel)]="selectedDocTypes"
+        (ngModelChange)="onDocTypeFilter($event)">
+      </nz-select>
+      <nz-select
+        class="filter-select"
+        nzMode="multiple"
+        nzPlaceHolder="Статус"
+        [nzOptions]="docStateFiltersOptions"
+        [(ngModel)]="selectedDocStates"
+        (ngModelChange)="onDocStateFilter($event)">
+      </nz-select>
       <button nz-button nzType="default" (click)="resetAllFilters()">
         <span nz-icon nzType="close-circle"></span> Сбросить фильтры
       </button>
@@ -133,7 +156,7 @@
               <!-- Номер документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography class="doc-num">{{ document.document.docNum }}</span>
+                  <span nz-typography class="doc-num" (click)="onOpenDocument(document)">{{ document.document.docNum }}</span>
                 </nz-typography>
               </td>
 
@@ -177,7 +200,7 @@
               <!-- Тип документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography>{{ document.docTypeName }}</span>
+                  <span nz-typography class="doc-type" (click)="onDocTypeClick(document)">{{ document.docTypeName }}</span>
                 </nz-typography>
               </td>
 
