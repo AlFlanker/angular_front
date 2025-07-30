@@ -72,9 +72,9 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   // Доступные фильтры
   availableFilters: FilterOption[] = [];
-  subsystemFilterOptions:Array<{ text: string; value: string; byDefault?: boolean }> = [];
-  docTypeFiltersOptions = [];
-  docStateFiltersOptions = [];
+  subsystemFilterOptions: Array<{ text: string; value: string; byDefault?: boolean }> = [];
+  docTypeFiltersOptions: Array<{ text: string; value: string }> = [];
+  docStateFiltersOptions: Array<{ text: string; value: any }> = [];
   // список всех выбранных фильтров
   selectedOptions: SubsystemFilterItem[] = [];
   // Сортировка
@@ -306,6 +306,11 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
         this.selectedOptions = this.availableFilters
           .filter(elem => subsys === elem.subsystem)
           .map(elem => this.toSubsystemItem(elem));
+        this.updateDocTypeOptions(subsys);
+      } else {
+        // При наличии нескольких подсистем фильтры типов и статусов очищаем
+        this.docTypeFiltersOptions = [];
+        this.docStateFiltersOptions = [];
       }
     }
 
@@ -342,14 +347,68 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
    * @param option
    */
   onSubsystemFilter(option: string | string[]) {
-    const opt = Array.isArray(option)
-      ? option
-      : [option];
+    const opt = Array.isArray(option) ? option : [option];
     this.selectedOptions = this.availableFilters
       .filter(elem => opt.includes(elem.subsystem))
       .map(elem => this.toSubsystemItem(elem));
 
+    this.updateDocTypeOptions(this.selectedOptions[0]?.subsystem || '');
+    this.docStateFiltersOptions = [];
+
     this.loadDocuments();
+  }
+
+  private updateDocTypeOptions(subsystem: string): void {
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    this.docTypeFiltersOptions = sub
+      ? sub.docTypes.map(dt => ({ text: dt.docTypeName, value: dt.docTypeId }))
+      : [];
+  }
+
+  private updateDocStateOptions(subsystem: string, docTypeIds: string[]): void {
+    this.docStateFiltersOptions = [];
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    if (!sub) { return; }
+    sub.docTypes.forEach(dt => {
+      if (docTypeIds.includes(dt.docTypeId)) {
+        dt.docStates.forEach(state => {
+          this.docStateFiltersOptions.push({
+            text: `${dt.docTypeName}: ${state}`,
+            value: { docTypeId: dt.docTypeId, state: state }
+          });
+        });
+      }
+    });
+  }
+
+  onDocTypeFilter(option: string | string[]) {
+    const docTypeIds = Array.isArray(option) ? option : [option];
+    if (this.selectedOptions.length === 0) { return; }
+    this.selectedOptions[0].docTypes = docTypeIds.map(id => ({ docTypeId: id, docState: [] }));
+    this.updateDocStateOptions(this.selectedOptions[0].subsystem, docTypeIds);
+    this.loadDocuments();
+  }
+
+  onDocStateFilter(option: any | any[]) {
+    const selected = Array.isArray(option) ? option : [option];
+    if (this.selectedOptions.length === 0) { return; }
+    const map: { [key: string]: string[] } = {};
+    selected.forEach((val: any) => {
+      const { docTypeId, state } = val;
+      if (!map[docTypeId]) { map[docTypeId] = []; }
+      map[docTypeId].push(state);
+    });
+    this.selectedOptions[0].docTypes = Object.keys(map).map(id => ({ docTypeId: id, docState: map[id] }));
+    this.loadDocuments();
+  }
+
+  onDocNumClick(document: Document, event: Event): void {
+    event.stopPropagation();
+    this.documentOpenService.openDocumentPostMessage(document);
+  }
+
+  onDocTypeClick(document: Document): void {
+    this.modalService.showInfoModal('Тип документа', document.docTypeName);
   }
 
   toSubsystemItem(opt: FilterOption): SubsystemFilterItem {
@@ -361,7 +420,9 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   resetAllFilters(): void {
     // выбранные фильтры
-    this.subsystemFilterOptions = []
+    this.subsystemFilterOptions = [];
+    this.docTypeFiltersOptions = [];
+    this.docStateFiltersOptions = [];
     this.selectedOptions = [];
     // сбросить сортировку
     this.currentSort = [];
@@ -371,3 +432,4 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.loadDocuments();
   }
 }
+
