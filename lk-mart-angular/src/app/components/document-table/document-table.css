@@ -1,0 +1,251 @@
+.document-table-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Стили для переключателей области */
+.scope-selector {
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+  border: none;
+}
+
+.scope-selector ::ng-deep .ant-card-body {
+  padding: 16px;
+}
+
+.scope-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+.scope-button {
+  min-width: 180px;
+  height: 40px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.scope-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Стили для сообщения об ошибке */
+.error-alert {
+  margin-bottom: 20px;
+}
+
+/* Стили для карточки таблицы */
+.table-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.table-card ::ng-deep .ant-card-body {
+  padding: 0;
+}
+
+/* Стили для таблицы */
+.document-table {
+  width: 100%;
+}
+
+.document-table ::ng-deep .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #262626;
+  border-bottom: 2px solid #f0f0f0;
+  padding: 12px 16px;
+}
+
+.document-table ::ng-deep .ant-table-tbody > tr > td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.document-table ::ng-deep .ant-table-tbody > tr:hover > td {
+  background: #f5f5f5;
+}
+
+/* Стили для строк таблицы */
+.table-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: #f5f5f5;
+}
+
+/* Стили для номера документа */
+.doc-num {
+  font-weight: 500;
+  color: #1890ff;
+}
+
+/* Стили для ссылки подсистемы */
+.subsystem-link {
+  color: #1890ff;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.subsystem-link:hover {
+  color: #40a9ff;
+}
+
+/* Стили для тегов статуса */
+.status-tag {
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+/* Стили для аватаров пользователей */
+.user-avatar {
+  background: #1890ff;
+  color: white;
+  font-weight: 500;
+}
+
+/* Стили для карточки выбранного документа */
+.selected-doc-card {
+  background: #f8f9fa;
+  border-left: 4px solid #1890ff;
+  margin-top: 20px;
+}
+
+.selected-doc-card ::ng-deep .ant-card-head {
+  background: #f0f0f0;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.selected-doc-card ::ng-deep .ant-card-head-title {
+  color: #1890ff;
+  font-weight: 600;
+}
+
+/* Стили для описаний */
+.selected-doc-card ::ng-deep .ant-descriptions-item-label {
+  font-weight: 600;
+  color: #262626;
+}
+
+.selected-doc-card ::ng-deep .ant-descriptions-item-content {
+  color: #595959;
+}
+
+/* Стили для пагинации */
+.document-table ::ng-deep .ant-pagination {
+  margin: 16px;
+  text-align: right;
+}
+
+/* Стили для спиннера */
+.document-table ::ng-deep .ant-spin-container {
+  min-height: 400px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .document-table-container {
+    padding: 10px;
+  }
+
+  .scope-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .scope-button {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .document-table ::ng-deep .ant-table-thead > tr > th,
+  .document-table ::ng-deep .ant-table-tbody > tr > td {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .selected-doc-card ::ng-deep .ant-descriptions-row > th,
+  .selected-doc-card ::ng-deep .ant-descriptions-row > td {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.document-table-container {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Кастомные стили для Ant Design компонентов */
+::ng-deep .ant-table-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+::ng-deep .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+::ng-deep .ant-btn {
+  border-radius: 6px;
+}
+
+::ng-deep .ant-tag {
+  border-radius: 4px;
+}
+
+::ng-deep .ant-avatar {
+  border-radius: 50%;
+}
+
+/* Стили для иконок */
+::ng-deep .anticon {
+  margin-right: 4px;
+}
+
+/* Стили для типографики */
+::ng-deep .ant-typography {
+  margin: 0;
+}
+
+/* Стили для пространства */
+::ng-deep .ant-space {
+  align-items: center;
+}
+
+/* Стили для кнопочной группы */
+::ng-deep .ant-btn-group {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Стили для алертов */
+::ng-deep .ant-alert {
+  border-radius: 6px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* Список пользователь(колонка) */
+.user-list-cell {
+  display: block;
+  white-space: normal;     /* разрешает перенос */
+  word-break: break-word;  /* щадящий перенос */
+}

@@ -1,0 +1,217 @@
+<div class="document-table-container">
+  <!-- Заголовок с переключателями области -->
+  <nz-card class="scope-selector">
+    <div class="scope-buttons">
+      <button
+        [class]="'ant-btn scope-button ' + (isScopeActive('USER') ? 'ant-btn-primary' : 'ant-btn-default')"
+        (click)="switchScope('USER')">
+        <span nz-icon nzType="user" nzTheme="outline"></span>
+        Мои документы
+      </button>
+      <button
+        [class]="'ant-btn scope-button ' + (isScopeActive('ORG') ? 'ant-btn-primary' : 'ant-btn-default')"
+        (click)="switchScope('ORG')">
+        <span nz-icon nzType="bank" nzTheme="outline"></span>
+        Документы организации
+      </button>
+    </div>
+    <div>
+      <button nz-button nzType="default" (click)="resetAllFilters()">
+        <span nz-icon nzType="close-circle"></span> Сбросить фильтры
+      </button>
+    </div>
+  </nz-card>
+
+  <!-- Сообщение об ошибке -->
+  <nz-alert
+    *ngIf="error"
+    nzType="error"
+    nzShowIcon
+    [nzMessage]="error"
+    class="error-alert">
+  </nz-alert>
+
+  <!-- Таблица документов -->
+  <nz-card class="table-card">
+    <!-- Пока loading === true, отображается спиннер-->
+    <nz-spin [nzSpinning]="loading" nzTip="Загрузка документов...">
+      <nz-table
+        #basicTable
+        [nzScroll]="{ y: '700px' }"
+        [nzData]="documents"
+        [nzPageIndex]="pageIndex"
+        [nzPageSize]="pageSize"
+        [nzTotal]="total"
+        [nzShowSizeChanger]="true"
+        [nzShowQuickJumper]="false"
+        [nzShowTotal]="totalTemplate"
+        [nzLoading]="loading"
+        [nzFrontPagination]="false"
+        (nzPageIndexChange)="onPageIndexChange($event)"
+        (nzPageSizeChange)="onPageSizeChange($event)"
+        (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+        class="document-table">
+
+        <!-- Колонка: Номер документа -->
+        <thead>
+          <tr>
+            <th
+              nzColumnKey="doc_num"
+              [nzSortFn]="isColumnSortable('doc_num') ? true : false"
+              [nzSortOrder]="getSortDirection('doc_num') === 'ASC' ? 'ascend' : getSortDirection('doc_num') === 'DESC' ? 'descend' : null">
+              Номер документа
+            </th>
+            <th
+              nzColumnKey="doc_date"
+              [nzSortFn]="isColumnSortable('doc_date') ? true : false"
+              [nzSortOrder]="getSortDirection('doc_date') === 'ASC' ? 'ascend' : getSortDirection('doc_date') === 'DESC' ? 'descend' : null">
+              Дата документа
+            </th>
+            <th
+              nzColumnKey="organization"
+              [nzSortFn]="isColumnSortable('organization') ? true : false"
+              [nzSortOrder]="getSortDirection('organization') === 'ASC' ? 'ascend' : getSortDirection('organization') === 'DESC' ? 'descend' : null">
+              Организация
+            </th>
+            <th
+              nzColumnKey="tofk"
+              [nzSortFn]="isColumnSortable('tofk') ? true : false"
+              [nzSortOrder]="getSortDirection('tofk') === 'ASC' ? 'ascend' : getSortDirection('tofk') === 'DESC' ? 'descend' : null">
+              ТОФК
+            </th>
+            <th
+              nzColumnKey="account"
+              [nzSortFn]="isColumnSortable('account') ? true : false"
+              [nzSortOrder]="getSortDirection('account') === 'ASC' ? 'ascend' : getSortDirection('account') === 'DESC' ? 'descend' : null">
+              Счет
+            </th>
+            @if (isColumnSortable('subsystem')) {
+              <th
+                nzColumnKey="subsystem"
+                [nzSortFn]="true"
+                [nzSortOrder]="getSortDirection('subsystem') === 'ASC' ? 'ascend' : getSortDirection('subsystem') === 'DESC' ? 'descend' : null">
+                Подсистема
+              </th>
+            } @else {
+              <th
+                [nzFilters]="subsystemFilterOptions"
+                [nzFilterFn]="true"
+                (nzFilterChange)="onSubsystemFilter($event)"
+                [nzFilterMultiple]="false"
+              >Подсистема</th>
+            }
+            <!--   Особенность ant.design ->> Sort: Use [nzSortOrder]
+            to make a column sorted by default, use [nzSortFn] to determine sort result, and [nzSortDirections] to define available sort methods       -->
+            @if (isColumnSortable('doc_type_name')) {
+            <th
+              nzSortKey="docTypeName"
+              [nzSortFn]="isColumnSortable('doc_type_name') ? true : false"
+              [nzSortOrder]="getSortDirection('docTypeName') === 'ASC' ? 'ascend' : getSortDirection('docTypeName') === 'DESC' ? 'descend' : null">
+              Тип документа
+            </th>
+            } @else {
+              <th>Тип документа</th>
+            }
+            @if (isColumnSortable('doc_state')) {
+            <th
+              nzSortKey="docState"
+              [nzSortFn]="isColumnSortable('doc_state') ? true : false"
+              [nzSortOrder]="getSortDirection('docState') === 'ASC' ? 'ascend' : getSortDirection('docState') === 'DESC' ? 'descend' : null">
+              Статус
+            </th>
+            } @else {
+              <th>Статус</th>
+            }
+            <th>Пользователи</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (document of basicTable.data; track document.docGUID) {
+            <tr class="table-row">
+
+              <!-- Номер документа -->
+              <td>
+                <nz-typography>
+                  <span nz-typography class="doc-num">{{ document.document.docNum }}</span>
+                </nz-typography>
+              </td>
+
+              <!-- Дата документа -->
+              <td>
+                <nz-typography>
+                  <span nz-typography>{{ formatDate(document.document.docDate) }}</span>
+                </nz-typography>
+              </td>
+
+              <!-- Организация -->
+              <td>
+                <nz-typography>
+                  <span nz-typography>{{ document.organization}}</span>
+                </nz-typography>
+              </td>
+
+              <!-- ТОФК -->
+              <td>
+                <nz-typography>
+                  <span nz-typography>{{ document.document.tofk }}</span>
+                </nz-typography>
+              </td>
+
+              <!-- Счет -->
+              <td>
+                <nz-typography>
+                  <span nz-typography>{{ document.document.account }}</span>
+                </nz-typography>
+              </td>
+
+              <!-- Подсистема -->
+              <td>
+                <button
+                  class="ant-btn ant-btn-link ant-btn-sm subsystem-link"
+                  (click)="onSubsystemClick(document); $event.stopPropagation()">
+                  {{ document.subsystemName }}
+                </button>
+              </td>
+
+              <!-- Тип документа -->
+              <td>
+                <nz-typography>
+                  <span nz-typography>{{ document.docTypeName }}</span>
+                </nz-typography>
+              </td>
+
+              <!-- Статус -->
+              <td>
+                <nz-tag
+                  class="status-tag">
+                  {{ document.docState }}
+                </nz-tag>
+              </td>
+
+              <!-- Пользователи -->
+              <td>
+                <div class="user-list-cell">
+                    @if (document.users && document.users.length > 0) {
+                      @for (user of document.users; track user; let last = $last) {
+                        {{user}}
+                        @if (!last) {
+                         ,&nbsp;
+                        }
+                      }
+                    }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-spin>
+  </nz-card>
+</div>
+
+<!-- Шаблон для отображения общего количества записей -->
+<!-- Шаблон для отображения общего количества записей -->
+<ng-template #totalTemplate let-total>
+  Всего записей: {{ total }}
+</ng-template>

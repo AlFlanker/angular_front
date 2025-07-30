@@ -1,0 +1,63 @@
+<!-- Модальное окно выбора навигационных узлов -->
+<div *ngIf="isVisible" class="modal-overlay" (click)="onOverlayClick($event)">
+    <div class="modal-content">
+        <!-- Заголовок модального окна -->
+        <div class="modal-header">
+            <h3>Выбор навигационного узла</h3>
+            <button class="close-btn" (click)="closeModal()" title="Закрыть">
+                &times;
+            </button>
+        </div>
+        
+        <!-- Тело модального окна -->
+        <div class="modal-body">
+            <!-- Информация о запросе -->
+            <div class="modal-info">
+                <p><strong>Подсистема:</strong> {{ subsystem || 'Не указана' }}</p>
+                <p><strong>Тип документа:</strong> {{ docType || 'Не указан' }}</p>
+                <p><strong>Доступно узлов:</strong> {{ nodes.length }}</p>
+            </div>
+            
+            <!-- Список навигационных узлов -->
+            <div class="nodes-list" *ngIf="nodes.length > 0">
+                <div 
+                    *ngFor="let node of nodes" 
+                    class="node-item"
+                    [class.selected]="selectedNode?.id === node.id"
+                    (click)="selectNode(node)"
+                >
+                    <div class="node-name">{{ node.name }}</div>
+                    <div class="node-details">
+                        <span *ngIf="node.subsystem">Подсистема: {{ node.subsystem }}</span>
+                        <span *ngIf="node.docType">Тип: {{ node.docType }}</span>
+                        <span>ID: {{ node.id }}</span>
+                    </div>
+                    <div class="node-url">{{ node.url }}</div>
+                </div>
+            </div>
+            
+            <!-- Сообщение об отсутствии узлов -->
+            <div *ngIf="nodes.length === 0" class="no-nodes">
+                <p>Навигационные узлы не найдены</p>
+                <p>Попробуйте изменить параметры поиска</p>
+            </div>
+        </div>
+        
+        <!-- Футер модального окна -->
+        <div class="modal-footer">
+            <button 
+                class="btn btn-secondary" 
+                (click)="closeModal()"
+            >
+                Отмена
+            </button>
+            <button 
+                class="btn btn-primary" 
+                [disabled]="!selectedNode"
+                (click)="confirmSelection()"
+            >
+                Выбрать
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+{
+  "name": "lk-mart-angular-app",
+  "version": "1.0.0",
+  "description": "LK Mart Angular приложение - современная версия",
+  "scripts": {
+    "start": "cd lk-mart-angular && ng serve --port 4201",
+    "build": "cd lk-mart-angular && ng build",
+    "test": "cd lk-mart-angular && ng test",
+    "lint": "cd lk-mart-angular && ng lint",
+    "install-deps": "cd lk-mart-angular && npm install"
+  },
+  "keywords": [
+    "angular",
+    "lk-mart",
+    "typescript",
+    "rxjs"
+  ],
+  "author": "OTR Team",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+} 
