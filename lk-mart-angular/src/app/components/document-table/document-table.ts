@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -17,6 +17,8 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { FormsModule } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
@@ -32,7 +34,6 @@ import { DocumentListService } from '../../services/document-list';
 import { DocumentOpenService } from '../../services/document-open';
 import { NavigationNodesService } from '../../services/navigation-nodes';
 import { ModalService } from '../../services/modal';
-import { PubsubService } from '../../services/pubsub';
 
 @Component({
   selector: 'app-document-table',
@@ -53,7 +54,9 @@ import { PubsubService } from '../../services/pubsub';
     NzBadgeModule,
     NzAvatarModule,
     NzDescriptionsModule,
-    NzModalModule
+    NzModalModule,
+    NzSelectModule,
+    FormsModule
   ],
   templateUrl: './document-table.html',
   styleUrl: './document-table.css'
@@ -72,9 +75,13 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   // Доступные фильтры
   availableFilters: FilterOption[] = [];
-  subsystemFilterOptions:Array<{ text: string; value: string; byDefault?: boolean }> = [];
-  docTypeFiltersOptions = [];
-  docStateFiltersOptions = [];
+  subsystemFilterOptions:Array<{ label: string; value: string }> = [];
+  docTypeFiltersOptions: Array<{ label: string; value: string }> = [];
+  docStateFiltersOptions: Array<{ label: string; options: Array<{ label: string; value: string }> }> = [];
+  selectedSubsystem: string | null = null;
+  selectedDocTypes: string[] = [];
+  selectedStatesMap: { [key: string]: string[] } = {};
+  selectedDocStates: string[] = [];
   // список всех выбранных фильтров
   selectedOptions: SubsystemFilterItem[] = [];
   // Сортировка
@@ -93,7 +100,6 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     private documentOpenService: DocumentOpenService,
     private navigationNodesService: NavigationNodesService,
     private modalService: ModalService,
-    private pubsubService: PubsubService,
     private message: NzMessageService,
     private notification: NzNotificationService
   ) {}
@@ -271,6 +277,14 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
       });
   }
 
+  onDocTypeClick(document: Document): void {
+    this.modalService.showInfoModal('Тип документа', document.docTypeName, 'info');
+  }
+
+  onOpenDocument(document: Document): void {
+    this.documentOpenService.openDocument(document);
+  }
+
   /**
    * Форматирует дату
    */
@@ -296,16 +310,13 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
       this.availableFilters = filters.filterOptions;
       // Выбор подсистем
       this.subsystemFilterOptions = filters.filterOptions.map((dt: FilterOption) => ({
-        text: dt.subsystemName,
-        value: dt.subsystem,
-        byDefault: this.subsystemFilterOptions.length === 1
-      })) as Array<{ text: string; value: string; byDefault?: boolean }>;
+        label: dt.subsystemName,
+        value: dt.subsystem
+      }));
       // У нас только одна подсистема и сразу выбираем её
       if (this.subsystemFilterOptions.length === 1) {
         const subsys = this.subsystemFilterOptions[0].value;
-        this.selectedOptions = this.availableFilters
-          .filter(elem => subsys === elem.subsystem)
-          .map(elem => this.toSubsystemItem(elem));
+        this.onSubsystemFilter(subsys);
       }
     }
 
@@ -341,27 +352,85 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
    * Выбор эл-та подсистемы
    * @param option
    */
-  onSubsystemFilter(option: string | string[]) {
-    const opt = Array.isArray(option)
-      ? option
-      : [option];
-    this.selectedOptions = this.availableFilters
-      .filter(elem => opt.includes(elem.subsystem))
-      .map(elem => this.toSubsystemItem(elem));
+  onSubsystemFilter(option: string) {
+    this.selectedSubsystem = option;
+    this.selectedDocTypes = [];
+    this.selectedStatesMap = {};
+    this.selectedDocStates = [];
 
+    const found = this.availableFilters.find(f => f.subsystem === option);
+    this.docTypeFiltersOptions = found ?
+      found.docTypes.map(dt => ({ label: dt.docTypeName, value: dt.docTypeId })) : [];
+    this.docStateFiltersOptions = [];
+
+    this.updateSelectedOptions();
     this.loadDocuments();
   }
 
-  toSubsystemItem(opt: FilterOption): SubsystemFilterItem {
-    return {
-      subsystem: opt.subsystem,
-      docTypes: []
-    };
+  onDocTypeFilter(values: string[]) {
+    this.selectedDocTypes = values || [];
+    this.selectedDocStates = [];
+    this.selectedStatesMap = this.selectedDocTypes.reduce((acc, id) => {
+      acc[id] = this.selectedStatesMap[id] || [];
+      return acc;
+    }, {} as { [key: string]: string[] });
+
+    this.buildDocStateOptions();
+    this.updateSelectedOptions();
+    this.loadDocuments();
+  }
+
+  onDocStateFilter(values: string[]) {
+    this.selectedDocStates = values || [];
+    this.selectedStatesMap = {};
+    for (const val of this.selectedDocStates) {
+      const [dt, state] = val.split('|');
+      if (!this.selectedStatesMap[dt]) {
+        this.selectedStatesMap[dt] = [];
+      }
+      this.selectedStatesMap[dt].push(state);
+    }
+    this.updateSelectedOptions();
+    this.loadDocuments();
+  }
+
+  private buildDocStateOptions(): void {
+    const found = this.availableFilters.find(f => f.subsystem === this.selectedSubsystem);
+    const result: any[] = [];
+    if (found) {
+      for (const dt of found.docTypes) {
+        if (this.selectedDocTypes.includes(dt.docTypeId)) {
+          result.push({
+            label: dt.docTypeName,
+            options: dt.docStates.map(s => ({ label: s, value: `${dt.docTypeId}|${s}` }))
+          });
+        }
+      }
+    }
+    this.docStateFiltersOptions = result;
+  }
+
+  private updateSelectedOptions(): void {
+    if (this.selectedSubsystem) {
+      const docTypes = this.selectedDocTypes.map(id => ({
+        docTypeId: id,
+        docState: this.selectedStatesMap[id] || []
+      }));
+      this.selectedOptions = [{ subsystem: this.selectedSubsystem, docTypes }];
+    } else {
+      this.selectedOptions = [];
+    }
   }
 
   resetAllFilters(): void {
     // выбранные фильтры
-    this.subsystemFilterOptions = []
+    this.subsystemFilterOptions = [];
+    this.docTypeFiltersOptions = [];
+    this.docStateFiltersOptions = [];
+    this.selectedSubsystem = null;
+    this.selectedDocTypes = [];
+    this.selectedDocStates = [];
+    this.selectedStatesMap = {};
     this.selectedOptions = [];
     // сбросить сортировку
     this.currentSort = [];

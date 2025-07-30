@@ -15,6 +15,17 @@
   padding: 16px;
 }
 
+.filter-selects {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.filter-select {
+  min-width: 160px;
+}
+
 .scope-buttons {
   display: flex;
   justify-content: center;
@@ -95,6 +106,12 @@
 
 .subsystem-link:hover {
   color: #40a9ff;
+}
+
+.doc-type {
+  color: #1890ff;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 /* Стили для тегов статуса */

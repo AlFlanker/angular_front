@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { PubsubService } from './pubsub';
 import { Document } from '../models/types';
 
 @Injectable({
@@ -7,7 +6,7 @@ import { Document } from '../models/types';
 })
 export class DocumentOpenService {
 
-  constructor(private pubsubService: PubsubService) {}
+  constructor() {}
 
   /**
    * Открывает документ в новой вкладке
@@ -15,15 +14,11 @@ export class DocumentOpenService {
    */
   openDocument(document: Document): void {
     if (document && document.docGUID) {
-      // Отправляем событие о выборе документа
-      this.pubsubService.publishDocumentSelected(
-        document.docGUID, 
-        document.subsystem, 
-        'open'
-      );
-      
-      // Открываем документ в новой вкладке
-      window.open(`/api/documents/${document.docGUID}/view`, '_blank');
+      window.parent.postMessage({
+        type: 'openDocument',
+        documentId: document.docGUID,
+        subsystem: document.subsystem
+      }, '*');
     }
   }
 
@@ -33,15 +28,11 @@ export class DocumentOpenService {
    */
   openDocumentInModal(document: Document): void {
     if (document && document.docGUID) {
-      // Отправляем событие о выборе документа
-      this.pubsubService.publishDocumentSelected(
-        document.docGUID, 
-        document.subsystem, 
-        'modal'
-      );
-      
-      // Здесь можно добавить логику открытия модального окна
-      console.log('Открытие документа в модальном окне:', document);
+      window.parent.postMessage({
+        type: 'openDocumentModal',
+        documentId: document.docGUID,
+        subsystem: document.subsystem
+      }, '*');
     }
   }
 
@@ -51,19 +42,12 @@ export class DocumentOpenService {
    */
   openDocumentInIframe(document: Document): void {
     if (document && document.docGUID) {
-      // Отправляем событие о выборе документа
-      this.pubsubService.publishDocumentSelected(
-        document.docGUID, 
-        document.subsystem, 
-        'iframe'
-      );
-      
-      // Отправляем событие для открытия в iframe
-      this.pubsubService.publish('openDocumentIframe', {
+      window.parent.postMessage({
+        type: 'openDocumentIframe',
         documentId: document.docGUID,
-        documentName: document.subsystem,
+        subsystem: document.subsystem,
         url: `/api/documents/${document.docGUID}/view`
-      });
+      }, '*');
     }
   }
 
@@ -73,18 +57,12 @@ export class DocumentOpenService {
    */
   downloadDocument(document: Document): void {
     if (document && document.docGUID) {
-      // Отправляем событие о выборе документа
-      this.pubsubService.publishDocumentSelected(
-        document.docGUID, 
-        document.subsystem, 
-        'download'
-      );
-      
-      // Создаем ссылку для скачивания
-      const link = document['createElement']('a');
-      link.href = `/api/documents/${document.docGUID}/download`;
-      link.download = document.subsystem || `document-${document.docGUID}`;
-      link.click();
+      window.parent.postMessage({
+        type: 'downloadDocument',
+        documentId: document.docGUID,
+        subsystem: document.subsystem,
+        url: `/api/documents/${document.docGUID}/download`
+      }, '*');
     }
   }
 }
