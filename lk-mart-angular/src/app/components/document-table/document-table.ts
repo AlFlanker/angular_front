@@ -417,7 +417,8 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     if (!sub) { return; }
     sub.docTypes.forEach(dt => {
       if (docTypeIds.includes(dt.docTypeId)) {
-        dt.docStates.forEach(state => {
+        const states = [...dt.docStates].sort((a, b) => a.localeCompare(b));
+        states.forEach(state => {
           this.docStateFiltersOptions.push({
             text: `${dt.docTypeName}: ${state}`,
             value: { docTypeId: dt.docTypeId, state: state }
@@ -603,7 +604,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
         this.cascDocStateOptions.push({
           docTypeId: dt.docTypeId,
           docTypeName: dt.docTypeName,
-          states: dt.docStates
+          states: [...dt.docStates].sort((a, b) => a.localeCompare(b))
         });
       }
     });
