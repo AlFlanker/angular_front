@@ -272,8 +272,8 @@
   width: 320px;
   max-width: 320px;
   padding: 8px;
-  transition: width 0.2s ease, min-height 0.2s ease;
-  min-height: 220px;
+  transition: width 0.4s ease, min-height 0.4s ease;
+  min-height: 140px;
 }
 
 .filter-select {
