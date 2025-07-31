@@ -95,63 +95,35 @@
               [nzSortOrder]="getSortDirection('account')">
               Счет
             </th>
-            @if (isColumnSortable('subsystem')) {
-              <th
-                nzColumnKey="subsystem"
-                [nzSortFn]="true"
-                [nzSortOrder]="getSortDirection('subsystem')">
-                Подсистема
-              </th>
-            } @else {
-              <th
-                [nzFilters]="subsystemFilterOptions"
-                [nzFilterFn]="true"
-                (nzFilterChange)="onSubsystemFilter($event)"
-                [nzFilterMultiple]="false"
-              >Подсистема</th>
-            }
+            <th nzCustomFilter>
+              Подсистема
+              <nz-filter-trigger
+                [(nzVisible)]="subsystemFilterVisible"
+                [nzActive]="selectedSubsystem !== null"
+                [nzDropdownMenu]="filterMenu">
+                <span nz-icon nzType="filter" />
+              </nz-filter-trigger>
+            </th>
             <!--   Особенность ant.design ->> Sort: Use [nzSortOrder]
             to make a column sorted by default, use [nzSortFn] to determine sort result, and [nzSortDirections] to define available sort methods       -->
-            @if (isColumnSortable('doc_type_name')) {
-            <th
-              nzSortKey="docTypeName"
-              [nzSortFn]="isColumnSortable('doc_type_name') ? true : false"
-              [nzSortOrder]="getSortDirection('docTypeName')">
+            <th nzCustomFilter>
               Тип документа
+              <nz-filter-trigger
+                [(nzVisible)]="subsystemFilterVisible"
+                [nzActive]="selectedDocTypes.length > 0"
+                [nzDropdownMenu]="filterMenu">
+                <span nz-icon nzType="filter" />
+              </nz-filter-trigger>
             </th>
-            } @else {
-              @if (docTypeFiltersOptions.length > 0) {
-                <th
-                  [nzFilters]="docTypeFiltersOptions"
-                  [nzFilterMultiple]="true"
-                  [nzFilterFn]="true"
-                  (nzFilterChange)="onDocTypeFilter($event)">
-                  Тип документа
-                </th>
-              } @else {
-                <th>Тип документа</th>
-              }
-            }
-            @if (isColumnSortable('doc_state')) {
-            <th
-              nzSortKey="docState"
-              [nzSortFn]="isColumnSortable('doc_state') ? true : false"
-              [nzSortOrder]="getSortDirection('docState')">
+            <th nzCustomFilter>
               Статус
+              <nz-filter-trigger
+                [(nzVisible)]="subsystemFilterVisible"
+                [nzActive]="selectedDocStates.length > 0"
+                [nzDropdownMenu]="filterMenu">
+                <span nz-icon nzType="filter" />
+              </nz-filter-trigger>
             </th>
-            } @else {
-              @if (docStateFiltersOptions.length > 0) {
-                <th
-                  [nzFilters]="docStateFiltersOptions"
-                  [nzFilterMultiple]="true"
-                  [nzFilterFn]="true"
-                  (nzFilterChange)="onDocStateFilter($event)">
-                  Статус
-                </th>
-              } @else {
-                <th>Статус</th>
-              }
-            }
             <th>Пользователи</th>
           </tr>
         </thead>
@@ -245,6 +217,51 @@
         </tbody>
       </nz-table>
     </nz-spin>
+    <nz-dropdown-menu #filterMenu="nzDropdownMenu">
+      <div class="ant-table-filter-dropdown cascade-filter-panel">
+        <nz-select
+          class="cascade-filter-select"
+          placeholder="Подсистема"
+          [(ngModel)]="selectedSubsystem"
+          (ngModelChange)="onSubsystemFilter($event)">
+          <nz-option
+            *ngFor="let opt of subsystemFilterOptions"
+            [nzValue]="opt.value"
+            [nzLabel]="opt.text">
+          </nz-option>
+        </nz-select>
+        <nz-select
+          *ngIf="docTypeFiltersOptions.length > 0"
+          class="cascade-filter-select"
+          nzMode="multiple"
+          placeholder="Тип документа"
+          [(ngModel)]="selectedDocTypes"
+          (ngModelChange)="onDocTypeFilter($event)">
+          <nz-option
+            *ngFor="let opt of docTypeFiltersOptions"
+            [nzValue]="opt.value"
+            [nzLabel]="opt.text">
+          </nz-option>
+        </nz-select>
+        <nz-select
+          *ngIf="docStateFiltersOptions.length > 0"
+          class="cascade-filter-select"
+          nzMode="multiple"
+          placeholder="Статус"
+          [(ngModel)]="selectedDocStates"
+          (ngModelChange)="onDocStateFilter($event)">
+          <nz-option
+            *ngFor="let opt of docStateFiltersOptions"
+            [nzValue]="opt.value"
+            [nzLabel]="opt.text">
+          </nz-option>
+        </nz-select>
+        <div class="cascade-filter-actions">
+          <button nz-button nzSize="small" nzType="primary" (click)="applyCustomFilters()">OK</button>
+          <button nz-button nzSize="small" (click)="resetCustomFilters()">Reset</button>
+        </div>
+      </div>
+    </nz-dropdown-menu>
   </nz-card>
 </div>
 
