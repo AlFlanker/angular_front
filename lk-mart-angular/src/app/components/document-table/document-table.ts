@@ -300,13 +300,20 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
         value: dt.subsystem,
         byDefault: this.subsystemFilterOptions.length === 1
       })) as Array<{ text: string; value: string; byDefault?: boolean }>;
-      // У нас только одна подсистема и сразу выбираем её
+      // Автовыбор подсистемы только при отсутствии пользовательского выбора
       if (this.subsystemFilterOptions.length === 1) {
         const subsys = this.subsystemFilterOptions[0].value;
-        this.selectedOptions = this.availableFilters
-          .filter(elem => subsys === elem.subsystem)
-          .map(elem => this.toSubsystemItem(elem));
+        if (this.selectedOptions.length === 0) {
+          this.selectedOptions = this.availableFilters
+            .filter(elem => subsys === elem.subsystem)
+            .map(elem => this.toSubsystemItem(elem));
+        }
         this.updateDocTypeOptions(subsys);
+        const docTypeIds =
+          this.selectedOptions[0]?.docTypes?.map(dt => dt.docTypeId) || [];
+        if (docTypeIds.length > 0) {
+          this.updateDocStateOptions(subsys, docTypeIds);
+        }
       } else {
         // При наличии нескольких подсистем фильтры типов и статусов очищаем
         this.docTypeFiltersOptions = [];
