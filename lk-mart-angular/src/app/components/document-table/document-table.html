@@ -2,7 +2,7 @@
   <!-- Заголовок с переключателями области -->
   <nz-card class="scope-selector">
     <nz-space nzAlign="center" nzSize="middle" class="scope-buttons">
-      <nz-button-group>
+      <div>
         <button
           nz-button
           class="scope-button"
@@ -19,7 +19,7 @@
           <span nz-icon nzType="bank"></span>
           Документы организации
         </button>
-      </nz-button-group>
+      </div>
       <button nz-button nzType="default" (click)="resetAllFilters()">
         <span nz-icon nzType="close-circle"></span>
         Сбросить фильтры

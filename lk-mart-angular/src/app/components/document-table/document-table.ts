@@ -21,11 +21,10 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
   Document,
-  PaginationInfo,
   Scope,
   FilterOption,
   SortCriterion,
-  SortDirection, SubsystemFilterItem
+  SortDirection, SubsystemFilterItem, DocumentParams
 } from '../../models/types';
 import { DocumentApiService } from '../../services/document-api';
 import { DocumentListService } from '../../services/document-list';
@@ -152,10 +151,15 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
     const page = this.pageIndex - 1;
 
-    // Используем метод с сортировкой, если есть активная сортировка
-    const request = this.currentSort.length > 0 || this.selectedOptions.length > 0
-      ? this.documentApiService.getDocumentsWithSort(this.currentSort, page, this.pageSize, this.currentScope, this.selectedOptions)
-      : this.documentApiService.getDocumentsSimple(page, this.pageSize, this.currentScope);
+    const params: DocumentParams = {
+      page: page,
+      size: this.pageSize,
+      filters: this.selectedOptions,
+      sort: this.currentSort
+    };
+
+    const request =
+      this.documentApiService.getDocuments(params, this.currentScope)
 
     request.subscribe({
       next: (response) => {
@@ -201,44 +205,49 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
    * Обработчик изменения сортировки
    */
   onSortChange(sort: any): void {
-    console.log('=== СОБЫТИЕ СОРТИРОВКИ ANT DESIGN ===');
-    console.log('Sort:', sort);
-
     const columnName = sort.key;
-    const direction = sort.value === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
 
     // Проверяем, поддерживается ли сортировка для данной колонки
     if (columnName && !this.isColumnSortable(columnName)) {
-      console.log(`Сортировка для колонки '${columnName}' не поддерживается`);
-      this.message.warning(`Сортировка для колонки '${columnName}' не поддерживается`);
       return;
     }
 
-    // Обновляем состояние сортировки
-    this.sortState[columnName] = direction;
-    console.log(`Обновленное состояние сортировки:`, this.sortState);
+    let direction;
+    if (sort.value === 'ascend') {
+      direction = SortDirection.ASC;
+    } else if (sort.value === 'descend') {
+      direction = SortDirection.DESC;
+    }
+    // Если направление сортировки не null
+    if (direction) {
+      // Обновляем состояние сортировки
+      this.sortState[columnName] = direction;
 
-    // Проверяем, есть ли уже сортировка по текущему столбцу
-    const existingSortIndex = this.currentSort.findIndex(
-      (sort: SortCriterion) => sort.field === columnName
-    );
+      // Проверяем, есть ли уже сортировка по текущему столбцу
+      const existingSortIndex = this.currentSort.findIndex(
+        (sort: SortCriterion) => sort.field === columnName
+      );
 
-    if (columnName && direction) {
       if (existingSortIndex !== -1) {
-        // Если сортировка по этому столбцу уже есть, обновляем направление
         this.currentSort[existingSortIndex].direction = direction;
       } else {
-        // Если сортировки по этому столбцу нет, добавляем новую
         const sortCriterion: SortCriterion = {
           field: columnName,
           direction: direction
         };
         this.currentSort.push(sortCriterion);
       }
-    }
+    } else {
+      delete this.sortState[columnName];
+      const existingSortIndex = this.currentSort.findIndex(
+        (sort: SortCriterion) => sort.field === columnName
+      );
 
-    console.log(`Применяем сортировку: ${columnName} ${direction}`);
-    console.log('Current sort criteria:', this.currentSort);
+      if (existingSortIndex !== -1) {
+        // удаляем из фильтров для сортировки
+        this.currentSort.splice(existingSortIndex, 1);
+      }
+    }
 
     // Загружаем документы с новой сортировкой
     this.loadDocuments();
