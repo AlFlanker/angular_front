@@ -203,6 +203,8 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   /**
    * Обработчик изменения сортировки
+   * Ограничение: искусственно запрещаю сортировки по нескольким столбцам сразу
+   * из-за косяка с отображением фильтров
    */
   onSortChange(sort: any): void {
     const columnName = sort.key;
@@ -212,31 +214,18 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let direction;
-    if (sort.value === 'ascend') {
-      direction = SortDirection.ASC;
-    } else if (sort.value === 'descend') {
-      direction = SortDirection.DESC;
-    }
+    let direction = this.resolveDirection(sort);
+
     // Если направление сортировки не null
     if (direction) {
       // Обновляем состояние сортировки
       this.sortState[columnName] = direction;
-
-      // Проверяем, есть ли уже сортировка по текущему столбцу
-      const existingSortIndex = this.currentSort.findIndex(
-        (sort: SortCriterion) => sort.field === columnName
-      );
-
-      if (existingSortIndex !== -1) {
-        this.currentSort[existingSortIndex].direction = direction;
-      } else {
-        const sortCriterion: SortCriterion = {
-          field: columnName,
-          direction: direction
-        };
-        this.currentSort.push(sortCriterion);
+      const sortCriterion: SortCriterion = {
+        field: columnName,
+        direction: direction
       }
+      // 1 Фильтр сортировки на запрос
+      this.currentSort = [sortCriterion];
     } else {
       delete this.sortState[columnName];
       const existingSortIndex = this.currentSort.findIndex(
@@ -251,6 +240,16 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
     // Загружаем документы с новой сортировкой
     this.loadDocuments();
+  }
+
+  private resolveDirection(sort: { key: string; value: 'ascend' | 'descend' | null }) {
+    let direction;
+    if (sort.value === 'ascend') {
+      direction = SortDirection.ASC;
+    } else if (sort.value === 'descend') {
+      direction = SortDirection.DESC;
+    }
+    return direction;
   }
 
   /**
@@ -346,16 +345,22 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   /**
    * Получает текущее направление сортировки для колонки
    */
-  getSortDirection(columnName: string): SortDirection | null {
-    return this.sortState[columnName] || null;
+  getSortDirection(columnName: string): string | null {
+    const dir = this.sortState[columnName];
+    if (dir) {
+      return dir === SortDirection.ASC
+        ? 'ascend'
+        : 'descend'
+    } else {
+      return null;
+    }
   }
 
   /**
    * Обработчик изменения текущих данных страницы
    */
   onCurrentPageDataChange(data: readonly Document[]): void {
-    // Можно использовать для дополнительной логики
-    console.log('Текущие данные страницы изменились:', data.length);
+    // пока не логики
   }
 
   /**
@@ -398,10 +403,15 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   }
 
   onDocTypeFilter(option: string | string[]) {
-    const docTypeIds = Array.isArray(option) ? option : [option];
-    if (this.selectedOptions.length === 0) { return; }
+    const docTypeIds = Array.isArray(option)
+      ? option
+      : [option];
+    if (this.selectedOptions.length === 0) {
+      return;
+    }
     this.selectedOptions[0].docTypes = docTypeIds.map(id => ({ docTypeId: id, docState: [] }));
-    this.updateDocStateOptions(this.selectedOptions[0].subsystem, docTypeIds);
+    let subsystem = this.selectedOptions[0].subsystem;
+    this.updateDocStateOptions(subsystem, docTypeIds);
     this.loadDocuments();
   }
 

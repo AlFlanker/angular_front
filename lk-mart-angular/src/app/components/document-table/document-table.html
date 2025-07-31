@@ -63,38 +63,38 @@
             <th
               nzColumnKey="doc_num"
               [nzSortFn]="isColumnSortable('doc_num') ? true : false"
-              [nzSortOrder]="getSortDirection('doc_num') === 'ASC' ? 'ascend' : getSortDirection('doc_num') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('doc_num')">
               Номер документа
             </th>
             <th
               nzColumnKey="doc_date"
               [nzSortFn]="isColumnSortable('doc_date') ? true : false"
-              [nzSortOrder]="getSortDirection('doc_date') === 'ASC' ? 'ascend' : getSortDirection('doc_date') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('doc_date')">
               Дата документа
             </th>
             <th
               nzColumnKey="organization"
               [nzSortFn]="isColumnSortable('organization') ? true : false"
-              [nzSortOrder]="getSortDirection('organization') === 'ASC' ? 'ascend' : getSortDirection('organization') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('organization')">
               Организация
             </th>
             <th
               nzColumnKey="tofk"
               [nzSortFn]="isColumnSortable('tofk') ? true : false"
-              [nzSortOrder]="getSortDirection('tofk') === 'ASC' ? 'ascend' : getSortDirection('tofk') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('tofk')">
               ТОФК
             </th>
             <th
               nzColumnKey="account"
               [nzSortFn]="isColumnSortable('account') ? true : false"
-              [nzSortOrder]="getSortDirection('account') === 'ASC' ? 'ascend' : getSortDirection('account') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('account')">
               Счет
             </th>
             @if (isColumnSortable('subsystem')) {
               <th
                 nzColumnKey="subsystem"
                 [nzSortFn]="true"
-                [nzSortOrder]="getSortDirection('subsystem') === 'ASC' ? 'ascend' : getSortDirection('subsystem') === 'DESC' ? 'descend' : null">
+                [nzSortOrder]="getSortDirection('subsystem')">
                 Подсистема
               </th>
             } @else {
@@ -111,7 +111,7 @@
             <th
               nzSortKey="docTypeName"
               [nzSortFn]="isColumnSortable('doc_type_name') ? true : false"
-              [nzSortOrder]="getSortDirection('docTypeName') === 'ASC' ? 'ascend' : getSortDirection('docTypeName') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('docTypeName')">
               Тип документа
             </th>
             } @else {
@@ -131,7 +131,7 @@
             <th
               nzSortKey="docState"
               [nzSortFn]="isColumnSortable('doc_state') ? true : false"
-              [nzSortOrder]="getSortDirection('docState') === 'ASC' ? 'ascend' : getSortDirection('docState') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('docState')">
               Статус
             </th>
             } @else {
