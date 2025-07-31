@@ -17,6 +17,10 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { FormsModule } from '@angular/forms';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
@@ -52,7 +56,11 @@ import { PubsubService } from '../../services/pubsub';
     NzBadgeModule,
     NzAvatarModule,
     NzDescriptionsModule,
-    NzModalModule
+    NzModalModule,
+    FormsModule,
+    NzDropDownModule,
+    NzSelectModule,
+    NzCheckboxModule
   ],
   templateUrl: './document-table.html',
   styleUrl: './document-table.css'
@@ -76,6 +84,14 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   docStateFiltersOptions: Array<{ text: string; value: any }> = [];
   // список всех выбранных фильтров
   selectedOptions: SubsystemFilterItem[] = [];
+
+  // Cascading filter state
+  filterVisible = false;
+  tempSubsystem: string | null = null;
+  tempDocTypeIds: string[] = [];
+  tempDocStateMap: { [key: string]: string[] } = {};
+  cascDocTypeOptions: Array<{ text: string; value: string }> = [];
+  cascDocStateOptions: Array<{ docTypeId: string; docTypeName: string; states: string[] }> = [];
   // Сортировка
   sortableColumns: string[] = [];
   // Текущая сортировка
@@ -317,16 +333,21 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
             .filter(elem => subsys === elem.subsystem)
             .map(elem => this.toSubsystemItem(elem));
         }
+        this.tempSubsystem = subsys;
         this.updateDocTypeOptions(subsys);
+        this.updateCascDocTypeOptions(subsys);
         const docTypeIds =
           this.selectedOptions[0]?.docTypes?.map(dt => dt.docTypeId) || [];
         if (docTypeIds.length > 0) {
           this.updateDocStateOptions(subsys, docTypeIds);
+          this.updateCascDocStateOptions(subsys, docTypeIds);
         }
       } else {
         // При наличии нескольких подсистем фильтры типов и статусов очищаем
         this.docTypeFiltersOptions = [];
         this.docStateFiltersOptions = [];
+        this.cascDocTypeOptions = [];
+        this.cascDocStateOptions = [];
       }
     }
 
@@ -453,12 +474,146 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.docTypeFiltersOptions = [];
     this.docStateFiltersOptions = [];
     this.selectedOptions = [];
+    this.tempSubsystem = null;
+    this.tempDocTypeIds = [];
+    this.tempDocStateMap = {};
+    this.cascDocTypeOptions = [];
+    this.cascDocStateOptions = [];
     // сбросить сортировку
     this.currentSort = [];
     this.sortState = {};
     // И обновить данные
     this.pageIndex = 1;
     this.loadDocuments();
+  }
+
+  isCascFilterActive(): boolean {
+    return this.selectedOptions.length > 0;
+  }
+
+  getFilterSummary(): string {
+    if (this.selectedOptions.length === 0) {
+      return '';
+    }
+    const subItem = this.selectedOptions[0];
+    let summary = this.getSubsystemName(subItem.subsystem);
+    if (subItem.docTypes && subItem.docTypes.length > 0) {
+      const parts = subItem.docTypes.map(dt => {
+        const type = this.findDocType(subItem.subsystem, dt.docTypeId);
+        const name = type ? type.docTypeName : dt.docTypeId;
+        if (dt.docState && dt.docState.length > 0) {
+          return `${name}: ${dt.docState.join(',')}`;
+        }
+        return name;
+      });
+      summary += ' / ' + parts.join('; ');
+    }
+    return summary;
+  }
+
+  onTempSubsystemChange(value: string | null): void {
+    this.tempSubsystem = value;
+    if (value) {
+      this.updateCascDocTypeOptions(value);
+    } else {
+      this.cascDocTypeOptions = [];
+    }
+    this.tempDocTypeIds = [];
+    this.tempDocStateMap = {};
+    this.cascDocStateOptions = [];
+  }
+
+  onTempDocTypeChange(values: string[]): void {
+    this.tempDocTypeIds = values;
+    if (this.tempSubsystem) {
+      this.updateCascDocStateOptions(this.tempSubsystem, values);
+    }
+    Object.keys(this.tempDocStateMap).forEach(key => {
+      if (!values.includes(key)) {
+        delete this.tempDocStateMap[key];
+      }
+    });
+  }
+
+  toggleTempState(docTypeId: string, state: string, checked: boolean): void {
+    if (checked) {
+      if (!this.tempDocStateMap[docTypeId]) {
+        this.tempDocStateMap[docTypeId] = [];
+      }
+      if (!this.tempDocStateMap[docTypeId].includes(state)) {
+        this.tempDocStateMap[docTypeId].push(state);
+      }
+    } else {
+      if (this.tempDocStateMap[docTypeId]) {
+        this.tempDocStateMap[docTypeId] = this.tempDocStateMap[docTypeId].filter(s => s !== state);
+        if (this.tempDocStateMap[docTypeId].length === 0) {
+          delete this.tempDocStateMap[docTypeId];
+        }
+      }
+    }
+  }
+
+  isTempStateSelected(docTypeId: string, state: string): boolean {
+    return this.tempDocStateMap[docTypeId]?.includes(state) ?? false;
+  }
+
+  applyCascFilters(): void {
+    this.selectedOptions = [];
+    if (this.tempSubsystem) {
+      const item: SubsystemFilterItem = {
+        subsystem: this.tempSubsystem,
+        docTypes: this.tempDocTypeIds.map(id => ({ docTypeId: id, docState: this.tempDocStateMap[id] || [] }))
+      };
+      this.selectedOptions = [item];
+    }
+    this.updateDocTypeOptions(this.tempSubsystem || '');
+    this.updateDocStateOptions(this.tempSubsystem || '', this.tempDocTypeIds);
+    this.filterVisible = false;
+    this.pageIndex = 1;
+    this.loadDocuments();
+  }
+
+  resetCascFilters(): void {
+    this.tempSubsystem = null;
+    this.tempDocTypeIds = [];
+    this.tempDocStateMap = {};
+    this.cascDocTypeOptions = [];
+    this.cascDocStateOptions = [];
+    this.selectedOptions = [];
+    this.filterVisible = false;
+    this.pageIndex = 1;
+    this.loadDocuments();
+  }
+
+  private updateCascDocTypeOptions(subsystem: string): void {
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    this.cascDocTypeOptions = sub ? sub.docTypes.map(dt => ({ text: dt.docTypeName, value: dt.docTypeId })) : [];
+  }
+
+  private updateCascDocStateOptions(subsystem: string, docTypeIds: string[]): void {
+    this.cascDocStateOptions = [];
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    if (!sub) {
+      return;
+    }
+    sub.docTypes.forEach(dt => {
+      if (docTypeIds.includes(dt.docTypeId)) {
+        this.cascDocStateOptions.push({
+          docTypeId: dt.docTypeId,
+          docTypeName: dt.docTypeName,
+          states: dt.docStates
+        });
+      }
+    });
+  }
+
+  private getSubsystemName(subsystem: string): string {
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    return sub ? sub.subsystemName : subsystem;
+  }
+
+  private findDocType(subsystem: string, docTypeId: string) {
+    return this.availableFilters.find(f => f.subsystem === subsystem)?.docTypes.find(dt => dt.docTypeId === docTypeId);
   }
 }
 
