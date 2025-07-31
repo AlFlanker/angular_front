@@ -303,13 +303,14 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     if (filters && filters.filterOptions) {
       this.availableFilters = filters.filterOptions;
       // Выбор подсистем
-      this.subsystemFilterOptions = filters.filterOptions.map((dt: FilterOption) => ({
+      const isOnlyOne = this.availableFilters.length === 1;
+      this.subsystemFilterOptions = this.availableFilters.map((dt: FilterOption) => ({
         text: dt.subsystemName,
         value: dt.subsystem,
-        byDefault: this.subsystemFilterOptions.length === 1
+        byDefault: isOnlyOne
       })) as Array<{ text: string; value: string; byDefault?: boolean }>;
       // Автовыбор подсистемы только при отсутствии пользовательского выбора
-      if (this.subsystemFilterOptions.length === 1) {
+      if (isOnlyOne) {
         const subsys = this.subsystemFilterOptions[0].value;
         if (this.selectedOptions.length === 0) {
           this.selectedOptions = this.availableFilters
@@ -388,7 +389,8 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   private updateDocStateOptions(subsystem: string, docTypeIds: string[]): void {
     this.docStateFiltersOptions = [];
-    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    const sub = this.availableFilters
+      .find(f => f.subsystem === subsystem);
     if (!sub) { return; }
     sub.docTypes.forEach(dt => {
       if (docTypeIds.includes(dt.docTypeId)) {
@@ -409,7 +411,8 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     if (this.selectedOptions.length === 0) {
       return;
     }
-    this.selectedOptions[0].docTypes = docTypeIds.map(id => ({ docTypeId: id, docState: [] }));
+    this.selectedOptions[0].docTypes = docTypeIds
+      .map(id => ({ docTypeId: id, docState: [] }));
     let subsystem = this.selectedOptions[0].subsystem;
     this.updateDocStateOptions(subsystem, docTypeIds);
     this.loadDocuments();
