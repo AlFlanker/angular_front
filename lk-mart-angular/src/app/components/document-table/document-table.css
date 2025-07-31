@@ -256,3 +256,51 @@
   word-break: break-word;  /* щадящий перенос */
 }
 
+/* Кастомные каскадные фильтры */
+.cascade-filter {
+  width: 320px;
+  max-width: 320px;
+  padding: 8px;
+  transition: width 0.2s ease, min-height 0.2s ease;
+  min-height: 220px;
+}
+
+.filter-select {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.state-collapse {
+  max-height: 260px;
+  overflow: auto;
+  margin-bottom: 8px;
+  transition: max-height 0.2s ease;
+}
+
+.state-collapse .ant-collapse-header {
+  padding: 4px 8px;
+  line-height: 24px;
+}
+
+.state-item {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  margin-bottom: 4px;
+}
+
+/* spacing between checkbox and text */
+.state-item > label {
+  margin-right: 4px;
+}
+
+.active-icon {
+  color: #1890ff;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+

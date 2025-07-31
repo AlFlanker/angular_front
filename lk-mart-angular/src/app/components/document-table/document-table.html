@@ -95,63 +95,27 @@
               [nzSortOrder]="getSortDirection('account')">
               Счет
             </th>
-            @if (isColumnSortable('subsystem')) {
-              <th
-                nzColumnKey="subsystem"
-                [nzSortFn]="true"
-                [nzSortOrder]="getSortDirection('subsystem')">
-                Подсистема
-              </th>
-            } @else {
-              <th
-                [nzFilters]="subsystemFilterOptions"
-                [nzFilterFn]="true"
-                (nzFilterChange)="onSubsystemFilter($event)"
-                [nzFilterMultiple]="false"
-              >Подсистема</th>
-            }
+            <th nzCustomFilter>
+              Подсистема
+              <nz-filter-trigger
+                [(nzVisible)]="filterVisible"
+                [nzActive]="isCascFilterActive()"
+                [nzDropdownMenu]="cascMenu">
+                <span
+                  nz-tooltip
+                  [nzTooltipTitle]="isCascFilterActive() ? getFilterSummary() : 'Фильтр'">
+                  <nz-icon
+                    nzType="filter"
+                    nzTheme="fill"
+                    [ngClass]="{ 'active-icon': isCascFilterActive() }"></nz-icon>
+                </span>
+              </nz-filter-trigger>
+            </th>
+
             <!--   Особенность ant.design ->> Sort: Use [nzSortOrder]
             to make a column sorted by default, use [nzSortFn] to determine sort result, and [nzSortDirections] to define available sort methods       -->
-            @if (isColumnSortable('doc_type_name')) {
-            <th
-              nzSortKey="docTypeName"
-              [nzSortFn]="isColumnSortable('doc_type_name') ? true : false"
-              [nzSortOrder]="getSortDirection('docTypeName')">
-              Тип документа
-            </th>
-            } @else {
-              @if (docTypeFiltersOptions.length > 0) {
-                <th
-                  [nzFilters]="docTypeFiltersOptions"
-                  [nzFilterMultiple]="true"
-                  [nzFilterFn]="true"
-                  (nzFilterChange)="onDocTypeFilter($event)">
-                  Тип документа
-                </th>
-              } @else {
-                <th>Тип документа</th>
-              }
-            }
-            @if (isColumnSortable('doc_state')) {
-            <th
-              nzSortKey="docState"
-              [nzSortFn]="isColumnSortable('doc_state') ? true : false"
-              [nzSortOrder]="getSortDirection('docState')">
-              Статус
-            </th>
-            } @else {
-              @if (docStateFiltersOptions.length > 0) {
-                <th
-                  [nzFilters]="docStateFiltersOptions"
-                  [nzFilterMultiple]="true"
-                  [nzFilterFn]="true"
-                  (nzFilterChange)="onDocStateFilter($event)">
-                  Статус
-                </th>
-              } @else {
-                <th>Статус</th>
-              }
-            }
+            <th>Тип документа</th>
+            <th>Статус</th>
             <th>Пользователи</th>
           </tr>
         </thead>
@@ -244,6 +208,37 @@
           }
         </tbody>
       </nz-table>
+      <nz-dropdown-menu #cascMenu="nzDropdownMenu">
+        <div class="ant-table-filter-dropdown cascade-filter">
+          <nz-select
+            nzPlaceHolder="Подсистема"
+            [(ngModel)]="tempSubsystem"
+            (ngModelChange)="onTempSubsystemChange($event)"
+            class="filter-select">
+            <nz-option *ngFor="let o of subsystemFilterOptions" [nzValue]="o.value" [nzLabel]="o.text"></nz-option>
+          </nz-select>
+          <nz-select
+            nzMode="multiple"
+            nzPlaceHolder="Тип документа"
+            [(ngModel)]="tempDocTypeIds"
+            (ngModelChange)="onTempDocTypeChange($event)"
+            class="filter-select">
+            <nz-option *ngFor="let o of cascDocTypeOptions" [nzValue]="o.value" [nzLabel]="o.text"></nz-option>
+          </nz-select>
+          <nz-collapse nzBorderless class="state-collapse">
+            <nz-collapse-panel *ngFor="let group of cascDocStateOptions" [nzHeader]="group.docTypeName">
+              <label *ngFor="let st of group.states" class="state-item">
+                <label nz-checkbox [ngModel]="isTempStateSelected(group.docTypeId, st)" (ngModelChange)="toggleTempState(group.docTypeId, st, $event)"></label>
+                {{ st }}
+              </label>
+            </nz-collapse-panel>
+          </nz-collapse>
+          <div class="ant-table-filter-dropdown-btns filter-buttons">
+            <button nz-button nzSize="small" (click)="resetCascFilters()">Сбросить</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="applyCascFilters()">Применить</button>
+          </div>
+        </div>
+      </nz-dropdown-menu>
     </nz-spin>
   </nz-card>
 </div>
