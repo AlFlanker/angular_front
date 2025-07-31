@@ -52,6 +52,8 @@
         [nzShowTotal]="totalTemplate"
         [nzLoading]="loading"
         [nzFrontPagination]="false"
+        nzBordered
+        nzSize="middle"
         (nzPageIndexChange)="onPageIndexChange($event)"
         (nzPageSizeChange)="onPageSizeChange($event)"
         (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
@@ -243,7 +245,6 @@
   </nz-card>
 </div>
 
-<!-- Шаблон для отображения общего количества записей -->
 <!-- Шаблон для отображения общего количества записей -->
 <ng-template #totalTemplate let-total>
   Всего записей: {{ total }}
