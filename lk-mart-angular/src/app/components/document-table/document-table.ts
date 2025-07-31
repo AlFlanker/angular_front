@@ -17,6 +17,9 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { FormsModule } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
@@ -52,7 +55,10 @@ import { PubsubService } from '../../services/pubsub';
     NzBadgeModule,
     NzAvatarModule,
     NzDescriptionsModule,
-    NzModalModule
+    NzModalModule,
+    NzDropDownModule,
+    NzSelectModule,
+    FormsModule
   ],
   templateUrl: './document-table.html',
   styleUrl: './document-table.css'
@@ -76,6 +82,11 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   docStateFiltersOptions: Array<{ text: string; value: any }> = [];
   // список всех выбранных фильтров
   selectedOptions: SubsystemFilterItem[] = [];
+  // значения выбранных фильтров для кастомной панели
+  selectedSubsystem: string | null = null;
+  selectedDocTypes: string[] = [];
+  selectedDocStates: any[] = [];
+  subsystemFilterVisible = false;
   // Сортировка
   sortableColumns: string[] = [];
   // Текущая сортировка
@@ -317,16 +328,31 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
             .filter(elem => subsys === elem.subsystem)
             .map(elem => this.toSubsystemItem(elem));
         }
+        this.selectedSubsystem = subsys;
         this.updateDocTypeOptions(subsys);
         const docTypeIds =
           this.selectedOptions[0]?.docTypes?.map(dt => dt.docTypeId) || [];
+        this.selectedDocTypes = docTypeIds;
         if (docTypeIds.length > 0) {
           this.updateDocStateOptions(subsys, docTypeIds);
+          this.selectedDocStates = [];
+          this.selectedOptions[0].docTypes.forEach(dt => {
+            dt.docState.forEach(state => {
+              this.selectedDocStates.push({ docTypeId: dt.docTypeId, state });
+            });
+          });
         }
       } else {
         // При наличии нескольких подсистем фильтры типов и статусов очищаем
         this.docTypeFiltersOptions = [];
         this.docStateFiltersOptions = [];
+        if (this.selectedSubsystem) {
+          this.updateDocTypeOptions(this.selectedSubsystem);
+          const docTypeIds = this.selectedDocTypes;
+          if (docTypeIds.length > 0) {
+            this.updateDocStateOptions(this.selectedSubsystem, docTypeIds);
+          }
+        }
       }
     }
 
@@ -374,6 +400,10 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
       .filter(elem => opt.includes(elem.subsystem))
       .map(elem => this.toSubsystemItem(elem));
 
+    this.selectedSubsystem = this.selectedOptions[0]?.subsystem || null;
+    this.selectedDocTypes = [];
+    this.selectedDocStates = [];
+
     this.updateDocTypeOptions(this.selectedOptions[0]?.subsystem || '');
     this.docStateFiltersOptions = [];
 
@@ -415,6 +445,8 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
       .map(id => ({ docTypeId: id, docState: [] }));
     let subsystem = this.selectedOptions[0].subsystem;
     this.updateDocStateOptions(subsystem, docTypeIds);
+    this.selectedDocTypes = docTypeIds;
+    this.selectedDocStates = [];
     this.loadDocuments();
   }
 
@@ -428,6 +460,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
       map[docTypeId].push(state);
     });
     this.selectedOptions[0].docTypes = Object.keys(map).map(id => ({ docTypeId: id, docState: map[id] }));
+    this.selectedDocStates = selected;
     this.loadDocuments();
   }
 
@@ -453,12 +486,38 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.docTypeFiltersOptions = [];
     this.docStateFiltersOptions = [];
     this.selectedOptions = [];
+    this.selectedSubsystem = null;
+    this.selectedDocTypes = [];
+    this.selectedDocStates = [];
     // сбросить сортировку
     this.currentSort = [];
     this.sortState = {};
     // И обновить данные
     this.pageIndex = 1;
     this.loadDocuments();
+  }
+
+  applyCustomFilters(): void {
+    if (this.selectedSubsystem) {
+      this.onSubsystemFilter(this.selectedSubsystem);
+      if (this.selectedDocTypes.length > 0) {
+        this.onDocTypeFilter(this.selectedDocTypes);
+      }
+      if (this.selectedDocStates.length > 0) {
+        this.onDocStateFilter(this.selectedDocStates);
+      }
+    } else {
+      this.resetAllFilters();
+    }
+    this.subsystemFilterVisible = false;
+  }
+
+  resetCustomFilters(): void {
+    this.selectedSubsystem = null;
+    this.selectedDocTypes = [];
+    this.selectedDocStates = [];
+    this.resetAllFilters();
+    this.subsystemFilterVisible = false;
   }
 }
 

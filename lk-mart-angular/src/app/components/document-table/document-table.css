@@ -256,3 +256,23 @@
   word-break: break-word;  /* щадящий перенос */
 }
 
+/* Панель каскадных фильтров */
+.cascade-filter-panel {
+  padding: 8px;
+  width: 240px;
+}
+
+.cascade-filter-select {
+  width: 100%;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.cascade-filter-actions {
+  text-align: right;
+}
+
+.cascade-filter-actions button:first-child {
+  margin-right: 8px;
+}
+
