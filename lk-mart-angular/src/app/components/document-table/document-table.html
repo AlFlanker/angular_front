@@ -103,6 +103,7 @@
                 [nzFilterFn]="true"
                 (nzFilterChange)="onSubsystemFilter($event)"
                 [nzFilterMultiple]="false"
+                [nzFilteredValue]="subsystemFilteredValue"
               >Подсистема</th>
             }
             <!--   Особенность ant.design ->> Sort: Use [nzSortOrder]
@@ -120,7 +121,8 @@
                   [nzFilters]="docTypeFiltersOptions"
                   [nzFilterMultiple]="true"
                   [nzFilterFn]="true"
-                  (nzFilterChange)="onDocTypeFilter($event)">
+                  (nzFilterChange)="onDocTypeFilter($event)"
+                  [nzFilteredValue]="docTypeFilteredValue">
                   Тип документа
                 </th>
               } @else {
@@ -140,7 +142,8 @@
                   [nzFilters]="docStateFiltersOptions"
                   [nzFilterMultiple]="true"
                   [nzFilterFn]="true"
-                  (nzFilterChange)="onDocStateFilter($event)">
+                  (nzFilterChange)="onDocStateFilter($event)"
+                  [nzFilteredValue]="docStateFilteredValue">
                   Статус
                 </th>
               } @else {
