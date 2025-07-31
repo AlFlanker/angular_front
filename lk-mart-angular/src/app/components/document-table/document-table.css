@@ -258,10 +258,11 @@
 
 /* Кастомные каскадные фильтры */
 .cascade-filter {
-  width: 300px;
-  max-width: 300px;
+  width: 320px;
+  max-width: 320px;
   padding: 8px;
-  transition: width 0.2s ease;
+  transition: width 0.2s ease, min-height 0.2s ease;
+  min-height: 220px;
 }
 
 .filter-select {
@@ -273,6 +274,7 @@
   max-height: 260px;
   overflow: auto;
   margin-bottom: 8px;
+  transition: max-height 0.2s ease;
 }
 
 .state-collapse .ant-collapse-header {
@@ -289,5 +291,11 @@
 
 .active-icon {
   color: #1890ff;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
