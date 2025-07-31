@@ -17,15 +17,19 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { FormsModule } from '@angular/forms';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
   Document,
-  PaginationInfo,
   Scope,
   FilterOption,
   SortCriterion,
-  SortDirection, SubsystemFilterItem
+  SortDirection, SubsystemFilterItem, DocumentParams
 } from '../../models/types';
 import { DocumentApiService } from '../../services/document-api';
 import { DocumentListService } from '../../services/document-list';
@@ -53,7 +57,12 @@ import { PubsubService } from '../../services/pubsub';
     NzBadgeModule,
     NzAvatarModule,
     NzDescriptionsModule,
-    NzModalModule
+    NzModalModule,
+    FormsModule,
+    NzDropDownModule,
+    NzSelectModule,
+    NzCheckboxModule,
+    NzCollapseModule
   ],
   templateUrl: './document-table.html',
   styleUrl: './document-table.css'
@@ -72,11 +81,19 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   // Доступные фильтры
   availableFilters: FilterOption[] = [];
-  subsystemFilterOptions:Array<{ text: string; value: string; byDefault?: boolean }> = [];
-  docTypeFiltersOptions = [];
-  docStateFiltersOptions = [];
+  subsystemFilterOptions: Array<{ text: string; value: string; byDefault?: boolean }> = [];
+  docTypeFiltersOptions: Array<{ text: string; value: string }> = [];
+  docStateFiltersOptions: Array<{ text: string; value: any }> = [];
   // список всех выбранных фильтров
   selectedOptions: SubsystemFilterItem[] = [];
+
+  // Cascading filter state
+  filterVisible = false;
+  tempSubsystem: string | null = null;
+  tempDocTypeIds: string[] = [];
+  tempDocStateMap: { [key: string]: string[] } = {};
+  cascDocTypeOptions: Array<{ text: string; value: string }> = [];
+  cascDocStateOptions: Array<{ docTypeId: string; docTypeName: string; states: string[] }> = [];
   // Сортировка
   sortableColumns: string[] = [];
   // Текущая сортировка
@@ -152,10 +169,15 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
     const page = this.pageIndex - 1;
 
-    // Используем метод с сортировкой, если есть активная сортировка
-    const request = this.currentSort.length > 0 || this.selectedOptions.length > 0
-      ? this.documentApiService.getDocumentsWithSort(this.currentSort, page, this.pageSize, this.currentScope, this.selectedOptions)
-      : this.documentApiService.getDocumentsSimple(page, this.pageSize, this.currentScope);
+    const params: DocumentParams = {
+      page: page,
+      size: this.pageSize,
+      filters: this.selectedOptions,
+      sort: this.currentSort
+    };
+
+    const request =
+      this.documentApiService.getDocuments(params, this.currentScope)
 
     request.subscribe({
       next: (response) => {
@@ -199,49 +221,60 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   /**
    * Обработчик изменения сортировки
+   * Ограничение: искусственно запрещаю сортировки по нескольким столбцам сразу
+   * из-за косяка с отображением фильтров
    */
   onSortChange(sort: any): void {
-    console.log('=== СОБЫТИЕ СОРТИРОВКИ ANT DESIGN ===');
-    console.log('Sort:', sort);
-
     const columnName = sort.key;
-    const direction = sort.value === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
 
     // Проверяем, поддерживается ли сортировка для данной колонки
     if (columnName && !this.isColumnSortable(columnName)) {
-      console.log(`Сортировка для колонки '${columnName}' не поддерживается`);
-      this.message.warning(`Сортировка для колонки '${columnName}' не поддерживается`);
       return;
     }
 
-    // Обновляем состояние сортировки
-    this.sortState[columnName] = direction;
-    console.log(`Обновленное состояние сортировки:`, this.sortState);
+    let direction = this.resolveDirection(sort);
 
-    // Проверяем, есть ли уже сортировка по текущему столбцу
-    const existingSortIndex = this.currentSort.findIndex(
-      (sort: SortCriterion) => sort.field === columnName
-    );
+    // Если направление сортировки не null
+    if (direction) {
+      // Обновляем состояние сортировки
+      this.sortState[columnName] = direction;
+      const sortCriterion: SortCriterion = {
+        field: columnName,
+        direction: direction
+      }
+      // 1 Фильтр сортировки на запрос
+      let findIndex = this.currentSort
+        .findIndex(e => e.field === columnName);
 
-    if (columnName && direction) {
-      if (existingSortIndex !== -1) {
-        // Если сортировка по этому столбцу уже есть, обновляем направление
-        this.currentSort[existingSortIndex].direction = direction;
+      if (findIndex > -1 ) {
+        this.currentSort[findIndex] = sortCriterion;
       } else {
-        // Если сортировки по этому столбцу нет, добавляем новую
-        const sortCriterion: SortCriterion = {
-          field: columnName,
-          direction: direction
-        };
         this.currentSort.push(sortCriterion);
+      }
+    } else {
+      delete this.sortState[columnName];
+      const existingSortIndex = this.currentSort.findIndex(
+        (sort: SortCriterion) => sort.field === columnName
+      );
+
+      if (existingSortIndex !== -1) {
+        // удаляем из фильтров для сортировки
+        this.currentSort.splice(existingSortIndex, 1);
       }
     }
 
-    console.log(`Применяем сортировку: ${columnName} ${direction}`);
-    console.log('Current sort criteria:', this.currentSort);
-
     // Загружаем документы с новой сортировкой
     this.loadDocuments();
+  }
+
+  private resolveDirection(sort: { key: string; value: 'ascend' | 'descend' | null }) {
+    let direction;
+    if (sort.value === 'ascend') {
+      direction = SortDirection.ASC;
+    } else if (sort.value === 'descend') {
+      direction = SortDirection.DESC;
+    }
+    return direction;
   }
 
   /**
@@ -295,17 +328,35 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     if (filters && filters.filterOptions) {
       this.availableFilters = filters.filterOptions;
       // Выбор подсистем
-      this.subsystemFilterOptions = filters.filterOptions.map((dt: FilterOption) => ({
+      const isOnlyOne = this.availableFilters.length === 1;
+      this.subsystemFilterOptions = this.availableFilters.map((dt: FilterOption) => ({
         text: dt.subsystemName,
         value: dt.subsystem,
-        byDefault: this.subsystemFilterOptions.length === 1
+        byDefault: isOnlyOne
       })) as Array<{ text: string; value: string; byDefault?: boolean }>;
-      // У нас только одна подсистема и сразу выбираем её
-      if (this.subsystemFilterOptions.length === 1) {
+      // Автовыбор подсистемы только при отсутствии пользовательского выбора
+      if (isOnlyOne) {
         const subsys = this.subsystemFilterOptions[0].value;
-        this.selectedOptions = this.availableFilters
-          .filter(elem => subsys === elem.subsystem)
-          .map(elem => this.toSubsystemItem(elem));
+        if (this.selectedOptions.length === 0) {
+          this.selectedOptions = this.availableFilters
+            .filter(elem => subsys === elem.subsystem)
+            .map(elem => this.toSubsystemItem(elem));
+        }
+        this.tempSubsystem = subsys;
+        this.updateDocTypeOptions(subsys);
+        this.updateCascDocTypeOptions(subsys);
+        const docTypeIds =
+          this.selectedOptions[0]?.docTypes?.map(dt => dt.docTypeId) || [];
+        if (docTypeIds.length > 0) {
+          this.updateDocStateOptions(subsys, docTypeIds);
+          this.updateCascDocStateOptions(subsys, docTypeIds);
+        }
+      } else {
+        // При наличии нескольких подсистем фильтры типов и статусов очищаем
+        this.docTypeFiltersOptions = [];
+        this.docStateFiltersOptions = [];
+        this.cascDocTypeOptions = [];
+        this.cascDocStateOptions = [];
       }
     }
 
@@ -325,16 +376,22 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   /**
    * Получает текущее направление сортировки для колонки
    */
-  getSortDirection(columnName: string): SortDirection | null {
-    return this.sortState[columnName] || null;
+  getSortDirection(columnName: string): string | null {
+    const dir = this.sortState[columnName];
+    if (dir) {
+      return dir === SortDirection.ASC
+        ? 'ascend'
+        : 'descend'
+    } else {
+      return null;
+    }
   }
 
   /**
    * Обработчик изменения текущих данных страницы
    */
   onCurrentPageDataChange(data: readonly Document[]): void {
-    // Можно использовать для дополнительной логики
-    console.log('Текущие данные страницы изменились:', data.length);
+    // пока не логики
   }
 
   /**
@@ -342,14 +399,76 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
    * @param option
    */
   onSubsystemFilter(option: string | string[]) {
-    const opt = Array.isArray(option)
-      ? option
-      : [option];
+    const opt = Array.isArray(option) ? option : [option];
     this.selectedOptions = this.availableFilters
       .filter(elem => opt.includes(elem.subsystem))
       .map(elem => this.toSubsystemItem(elem));
 
+    this.updateDocTypeOptions(this.selectedOptions[0]?.subsystem || '');
+    this.docStateFiltersOptions = [];
+
     this.loadDocuments();
+  }
+
+  private updateDocTypeOptions(subsystem: string): void {
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    this.docTypeFiltersOptions = sub
+      ? sub.docTypes.map(dt => ({ text: dt.docTypeName, value: dt.docTypeId }))
+      : [];
+  }
+
+  private updateDocStateOptions(subsystem: string, docTypeIds: string[]): void {
+    this.docStateFiltersOptions = [];
+    const sub = this.availableFilters
+      .find(f => f.subsystem === subsystem);
+    if (!sub) { return; }
+    sub.docTypes.forEach(dt => {
+      if (docTypeIds.includes(dt.docTypeId)) {
+        const states = [...dt.docStates].sort((a, b) => a.localeCompare(b));
+        states.forEach(state => {
+          this.docStateFiltersOptions.push({
+            text: `${dt.docTypeName}: ${state}`,
+            value: { docTypeId: dt.docTypeId, state: state }
+          });
+        });
+      }
+    });
+  }
+
+  onDocTypeFilter(option: string | string[]) {
+    const docTypeIds = Array.isArray(option)
+      ? option
+      : [option];
+    if (this.selectedOptions.length === 0) {
+      return;
+    }
+    this.selectedOptions[0].docTypes = docTypeIds
+      .map(id => ({ docTypeId: id, docState: [] }));
+    let subsystem = this.selectedOptions[0].subsystem;
+    this.updateDocStateOptions(subsystem, docTypeIds);
+    this.loadDocuments();
+  }
+
+  onDocStateFilter(option: any | any[]) {
+    const selected = Array.isArray(option) ? option : [option];
+    if (this.selectedOptions.length === 0) { return; }
+    const map: { [key: string]: string[] } = {};
+    selected.forEach((val: any) => {
+      const { docTypeId, state } = val;
+      if (!map[docTypeId]) { map[docTypeId] = []; }
+      map[docTypeId].push(state);
+    });
+    this.selectedOptions[0].docTypes = Object.keys(map).map(id => ({ docTypeId: id, docState: map[id] }));
+    this.loadDocuments();
+  }
+
+  onDocNumClick(document: Document, event: Event): void {
+    event.stopPropagation();
+    this.documentOpenService.openDocumentPostMessage(document);
+  }
+
+  onDocTypeClick(document: Document): void {
+    this.modalService.showInfoModal('Тип документа', document.docTypeName);
   }
 
   toSubsystemItem(opt: FilterOption): SubsystemFilterItem {
@@ -361,8 +480,15 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   resetAllFilters(): void {
     // выбранные фильтры
-    this.subsystemFilterOptions = []
+    this.subsystemFilterOptions = [];
+    this.docTypeFiltersOptions = [];
+    this.docStateFiltersOptions = [];
     this.selectedOptions = [];
+    this.tempSubsystem = null;
+    this.tempDocTypeIds = [];
+    this.tempDocStateMap = {};
+    this.cascDocTypeOptions = [];
+    this.cascDocStateOptions = [];
     // сбросить сортировку
     this.currentSort = [];
     this.sortState = {};
@@ -370,4 +496,134 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.pageIndex = 1;
     this.loadDocuments();
   }
+
+  isCascFilterActive(): boolean {
+    return this.selectedOptions.length > 0;
+  }
+
+  getFilterSummary(): string {
+    if (this.selectedOptions.length === 0) {
+      return '';
+    }
+    const subItem = this.selectedOptions[0];
+    let summary = this.getSubsystemName(subItem.subsystem);
+    if (subItem.docTypes && subItem.docTypes.length > 0) {
+      const parts = subItem.docTypes.map(dt => {
+        const type = this.findDocType(subItem.subsystem, dt.docTypeId);
+        const name = type ? type.docTypeName : dt.docTypeId;
+        if (dt.docState && dt.docState.length > 0) {
+          return `${name}: ${dt.docState.join(',')}`;
+        }
+        return name;
+      });
+      summary += ' / ' + parts.join('; ');
+    }
+    return summary;
+  }
+
+  onTempSubsystemChange(value: string | null): void {
+    this.tempSubsystem = value;
+    if (value) {
+      this.updateCascDocTypeOptions(value);
+    } else {
+      this.cascDocTypeOptions = [];
+    }
+    this.tempDocTypeIds = [];
+    this.tempDocStateMap = {};
+    this.cascDocStateOptions = [];
+  }
+
+  onTempDocTypeChange(values: string[]): void {
+    this.tempDocTypeIds = values;
+    if (this.tempSubsystem) {
+      this.updateCascDocStateOptions(this.tempSubsystem, values);
+    }
+    Object.keys(this.tempDocStateMap).forEach(key => {
+      if (!values.includes(key)) {
+        delete this.tempDocStateMap[key];
+      }
+    });
+  }
+
+  toggleTempState(docTypeId: string, state: string, checked: boolean): void {
+    if (checked) {
+      if (!this.tempDocStateMap[docTypeId]) {
+        this.tempDocStateMap[docTypeId] = [];
+      }
+      if (!this.tempDocStateMap[docTypeId].includes(state)) {
+        this.tempDocStateMap[docTypeId].push(state);
+      }
+    } else {
+      if (this.tempDocStateMap[docTypeId]) {
+        this.tempDocStateMap[docTypeId] = this.tempDocStateMap[docTypeId].filter(s => s !== state);
+        if (this.tempDocStateMap[docTypeId].length === 0) {
+          delete this.tempDocStateMap[docTypeId];
+        }
+      }
+    }
+  }
+
+  isTempStateSelected(docTypeId: string, state: string): boolean {
+    return this.tempDocStateMap[docTypeId]?.includes(state) ?? false;
+  }
+
+  applyCascFilters(): void {
+    this.selectedOptions = [];
+    if (this.tempSubsystem) {
+      const item: SubsystemFilterItem = {
+        subsystem: this.tempSubsystem,
+        docTypes: this.tempDocTypeIds.map(id => ({ docTypeId: id, docState: this.tempDocStateMap[id] || [] }))
+      };
+      this.selectedOptions = [item];
+    }
+    this.updateDocTypeOptions(this.tempSubsystem || '');
+    this.updateDocStateOptions(this.tempSubsystem || '', this.tempDocTypeIds);
+    this.filterVisible = false;
+    this.pageIndex = 1;
+    this.loadDocuments();
+  }
+
+  resetCascFilters(): void {
+    this.tempSubsystem = null;
+    this.tempDocTypeIds = [];
+    this.tempDocStateMap = {};
+    this.cascDocTypeOptions = [];
+    this.cascDocStateOptions = [];
+    this.selectedOptions = [];
+    this.filterVisible = false;
+    this.pageIndex = 1;
+    this.loadDocuments();
+  }
+
+  private updateCascDocTypeOptions(subsystem: string): void {
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    this.cascDocTypeOptions = sub ? sub.docTypes.map(dt => ({ text: dt.docTypeName, value: dt.docTypeId })) : [];
+  }
+
+  private updateCascDocStateOptions(subsystem: string, docTypeIds: string[]): void {
+    this.cascDocStateOptions = [];
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    if (!sub) {
+      return;
+    }
+    sub.docTypes.forEach(dt => {
+      if (docTypeIds.includes(dt.docTypeId)) {
+        this.cascDocStateOptions.push({
+          docTypeId: dt.docTypeId,
+          docTypeName: dt.docTypeName,
+          states: [...dt.docStates].sort((a, b) => a.localeCompare(b))
+        });
+      }
+    });
+  }
+
+  private getSubsystemName(subsystem: string): string {
+    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
+    return sub ? sub.subsystemName : subsystem;
+  }
+
+  private findDocType(subsystem: string, docTypeId: string) {
+    return this.availableFilters.find(f => f.subsystem === subsystem)?.docTypes.find(dt => dt.docTypeId === docTypeId);
+  }
 }
+

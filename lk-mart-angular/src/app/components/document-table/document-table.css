@@ -1,14 +1,15 @@
 .document-table-container {
-  padding: 20px;
-  max-width: 1400px;
+  padding: 16px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
 /* Стили для переключателей области */
 .scope-selector {
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
-  border: none;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
 }
 
 .scope-selector ::ng-deep .ant-card-body {
@@ -17,19 +18,18 @@
 
 .scope-buttons {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .scope-button {
   min-width: 180px;
   height: 40px;
   font-weight: 500;
-  transition: all 0.3s ease;
 }
 
 .scope-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
 }
 
 /* Стили для сообщения об ошибке */
@@ -40,8 +40,10 @@
 /* Стили для карточки таблицы */
 .table-card {
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
 }
 
 .table-card ::ng-deep .ant-card-body {
@@ -51,23 +53,29 @@
 /* Стили для таблицы */
 .document-table {
   width: 100%;
+  font-size: 14px;
 }
 
 .document-table ::ng-deep .ant-table-thead > tr > th {
-  background: #fafafa;
+  background: #f0f2f5;
   font-weight: 600;
-  color: #262626;
-  border-bottom: 2px solid #f0f0f0;
+  color: #3f3f3f;
+  border-bottom: 1px solid #e5e5e5;
   padding: 12px 16px;
 }
 
 .document-table ::ng-deep .ant-table-tbody > tr > td {
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f5f5f5;
+  vertical-align: top;
+}
+
+.document-table ::ng-deep .ant-table-tbody > tr:nth-child(odd) > td {
+  background: #fafafa;
 }
 
 .document-table ::ng-deep .ant-table-tbody > tr:hover > td {
-  background: #f5f5f5;
+  background: #e6f7ff;
 }
 
 /* Стили для строк таблицы */
@@ -77,35 +85,44 @@
 }
 
 .table-row:hover {
-  background-color: #f5f5f5;
+  background-color: #e6f7ff;
 }
 
 /* Стили для номера документа */
 .doc-num {
   font-weight: 500;
-  color: #1890ff;
+  color: #1677ff;
+}
+
+/* Ссылка на тип документа */
+.doc-type-link {
+  color: #1677ff;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 /* Стили для ссылки подсистемы */
 .subsystem-link {
-  color: #1890ff;
+  color: #1677ff;
   text-decoration: underline;
   transition: color 0.2s ease;
 }
 
 .subsystem-link:hover {
-  color: #40a9ff;
+  color: #0958d9;
 }
 
 /* Стили для тегов статуса */
 .status-tag {
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: 2px;
+  padding: 0 8px;
+  line-height: 22px;
 }
 
 /* Стили для аватаров пользователей */
 .user-avatar {
-  background: #1890ff;
+  background: #1677ff;
   color: white;
   font-weight: 500;
 }
@@ -249,3 +266,52 @@
   white-space: normal;     /* разрешает перенос */
   word-break: break-word;  /* щадящий перенос */
 }
+
+/* Кастомные каскадные фильтры */
+.cascade-filter {
+  width: 320px;
+  max-width: 320px;
+  padding: 8px;
+  transition: width 0.4s ease, min-height 0.4s ease;
+  min-height: 140px;
+}
+
+.filter-select {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.state-collapse {
+  max-height: 260px;
+  overflow: auto;
+  margin-bottom: 8px;
+  transition: max-height 0.2s ease;
+}
+
+.state-collapse .ant-collapse-header {
+  padding: 4px 8px;
+  line-height: 24px;
+}
+
+.state-item {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  margin-bottom: 4px;
+}
+
+/* spacing between checkbox and text */
+.state-item > label {
+  margin-right: 4px;
+}
+
+.active-icon {
+  color: #1677ff;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+

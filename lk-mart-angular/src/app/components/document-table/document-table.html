@@ -1,25 +1,30 @@
 <div class="document-table-container">
   <!-- Заголовок с переключателями области -->
   <nz-card class="scope-selector">
-    <div class="scope-buttons">
-      <button
-        [class]="'ant-btn scope-button ' + (isScopeActive('USER') ? 'ant-btn-primary' : 'ant-btn-default')"
-        (click)="switchScope('USER')">
-        <span nz-icon nzType="user" nzTheme="outline"></span>
-        Мои документы
-      </button>
-      <button
-        [class]="'ant-btn scope-button ' + (isScopeActive('ORG') ? 'ant-btn-primary' : 'ant-btn-default')"
-        (click)="switchScope('ORG')">
-        <span nz-icon nzType="bank" nzTheme="outline"></span>
-        Документы организации
-      </button>
-    </div>
-    <div>
+    <nz-space nzAlign="center" nzSize="middle" class="scope-buttons">
+      <div>
+        <button
+          nz-button
+          class="scope-button"
+          [nzType]="isScopeActive('USER') ? 'primary' : 'default'"
+          (click)="switchScope('USER')">
+          <span nz-icon nzType="user"></span>
+          Мои документы
+        </button>
+        <button
+          nz-button
+          class="scope-button"
+          [nzType]="isScopeActive('ORG') ? 'primary' : 'default'"
+          (click)="switchScope('ORG')">
+          <span nz-icon nzType="bank"></span>
+          Документы организации
+        </button>
+      </div>
       <button nz-button nzType="default" (click)="resetAllFilters()">
-        <span nz-icon nzType="close-circle"></span> Сбросить фильтры
+        <span nz-icon nzType="close-circle"></span>
+        Сбросить фильтры
       </button>
-    </div>
+    </nz-space>
   </nz-card>
 
   <!-- Сообщение об ошибке -->
@@ -37,6 +42,7 @@
     <nz-spin [nzSpinning]="loading" nzTip="Загрузка документов...">
       <nz-table
         #basicTable
+        nzSize="middle"
         [nzScroll]="{ y: '700px' }"
         [nzData]="documents"
         [nzPageIndex]="pageIndex"
@@ -53,75 +59,64 @@
         class="document-table">
 
         <!-- Колонка: Номер документа -->
-        <thead>
+        <thead (nzSortOrderChange)="onSortChange($event)">
           <tr>
             <th
               nzColumnKey="doc_num"
+              [nzSortPriority] = 1
               [nzSortFn]="isColumnSortable('doc_num') ? true : false"
-              [nzSortOrder]="getSortDirection('doc_num') === 'ASC' ? 'ascend' : getSortDirection('doc_num') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('doc_num')">
               Номер документа
             </th>
             <th
               nzColumnKey="doc_date"
+              [nzSortPriority] = 2
               [nzSortFn]="isColumnSortable('doc_date') ? true : false"
-              [nzSortOrder]="getSortDirection('doc_date') === 'ASC' ? 'ascend' : getSortDirection('doc_date') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('doc_date')">
               Дата документа
             </th>
             <th
               nzColumnKey="organization"
+              [nzSortPriority] = 3
               [nzSortFn]="isColumnSortable('organization') ? true : false"
-              [nzSortOrder]="getSortDirection('organization') === 'ASC' ? 'ascend' : getSortDirection('organization') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('organization')">
               Организация
             </th>
             <th
               nzColumnKey="tofk"
+              [nzSortPriority] = 4
               [nzSortFn]="isColumnSortable('tofk') ? true : false"
-              [nzSortOrder]="getSortDirection('tofk') === 'ASC' ? 'ascend' : getSortDirection('tofk') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('tofk')">
               ТОФК
             </th>
             <th
               nzColumnKey="account"
+              [nzSortPriority] = 5
               [nzSortFn]="isColumnSortable('account') ? true : false"
-              [nzSortOrder]="getSortDirection('account') === 'ASC' ? 'ascend' : getSortDirection('account') === 'DESC' ? 'descend' : null">
+              [nzSortOrder]="getSortDirection('account')">
               Счет
             </th>
-            @if (isColumnSortable('subsystem')) {
-              <th
-                nzColumnKey="subsystem"
-                [nzSortFn]="true"
-                [nzSortOrder]="getSortDirection('subsystem') === 'ASC' ? 'ascend' : getSortDirection('subsystem') === 'DESC' ? 'descend' : null">
-                Подсистема
-              </th>
-            } @else {
-              <th
-                [nzFilters]="subsystemFilterOptions"
-                [nzFilterFn]="true"
-                (nzFilterChange)="onSubsystemFilter($event)"
-                [nzFilterMultiple]="false"
-              >Подсистема</th>
-            }
+            <th nzCustomFilter>
+              Подсистема
+              <nz-filter-trigger
+                [(nzVisible)]="filterVisible"
+                [nzActive]="isCascFilterActive()"
+                [nzDropdownMenu]="cascMenu">
+                <span
+                  nz-tooltip
+                  [nzTooltipTitle]="isCascFilterActive() ? getFilterSummary() : 'Фильтр'">
+                  <nz-icon
+                    nzType="filter"
+                    nzTheme="fill"
+                    [ngClass]="{ 'active-icon': isCascFilterActive() }"></nz-icon>
+                </span>
+              </nz-filter-trigger>
+            </th>
+
             <!--   Особенность ant.design ->> Sort: Use [nzSortOrder]
             to make a column sorted by default, use [nzSortFn] to determine sort result, and [nzSortDirections] to define available sort methods       -->
-            @if (isColumnSortable('doc_type_name')) {
-            <th
-              nzSortKey="docTypeName"
-              [nzSortFn]="isColumnSortable('doc_type_name') ? true : false"
-              [nzSortOrder]="getSortDirection('docTypeName') === 'ASC' ? 'ascend' : getSortDirection('docTypeName') === 'DESC' ? 'descend' : null">
-              Тип документа
-            </th>
-            } @else {
-              <th>Тип документа</th>
-            }
-            @if (isColumnSortable('doc_state')) {
-            <th
-              nzSortKey="docState"
-              [nzSortFn]="isColumnSortable('doc_state') ? true : false"
-              [nzSortOrder]="getSortDirection('docState') === 'ASC' ? 'ascend' : getSortDirection('docState') === 'DESC' ? 'descend' : null">
-              Статус
-            </th>
-            } @else {
-              <th>Статус</th>
-            }
+            <th>Тип документа</th>
+            <th>Статус</th>
             <th>Пользователи</th>
           </tr>
         </thead>
@@ -133,7 +128,11 @@
               <!-- Номер документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography class="doc-num">{{ document.document.docNum }}</span>
+                  <span
+                    nz-typography
+                    class="doc-num"
+                    (click)="onDocNumClick(document, $event)"
+                  >{{ document.document.docNum }}</span>
                 </nz-typography>
               </td>
 
@@ -177,7 +176,11 @@
               <!-- Тип документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography>{{ document.docTypeName }}</span>
+                  <span
+                    nz-typography
+                    class="doc-type-link"
+                    (click)="onDocTypeClick(document); $event.stopPropagation()"
+                  >{{ document.docTypeName }}</span>
                 </nz-typography>
               </td>
 
@@ -206,6 +209,37 @@
           }
         </tbody>
       </nz-table>
+      <nz-dropdown-menu #cascMenu="nzDropdownMenu">
+        <div class="ant-table-filter-dropdown cascade-filter">
+          <nz-select
+            nzPlaceHolder="Подсистема"
+            [(ngModel)]="tempSubsystem"
+            (ngModelChange)="onTempSubsystemChange($event)"
+            class="filter-select">
+            <nz-option *ngFor="let o of subsystemFilterOptions" [nzValue]="o.value" [nzLabel]="o.text"></nz-option>
+          </nz-select>
+          <nz-select
+            nzMode="multiple"
+            nzPlaceHolder="Тип документа"
+            [(ngModel)]="tempDocTypeIds"
+            (ngModelChange)="onTempDocTypeChange($event)"
+            class="filter-select">
+            <nz-option *ngFor="let o of cascDocTypeOptions" [nzValue]="o.value" [nzLabel]="o.text"></nz-option>
+          </nz-select>
+          <nz-collapse nzBorderless class="state-collapse">
+            <nz-collapse-panel *ngFor="let group of cascDocStateOptions" [nzHeader]="group.docTypeName">
+              <label *ngFor="let st of group.states" class="state-item">
+                <label nz-checkbox [ngModel]="isTempStateSelected(group.docTypeId, st)" (ngModelChange)="toggleTempState(group.docTypeId, st, $event)"></label>
+                {{ st }}
+              </label>
+            </nz-collapse-panel>
+          </nz-collapse>
+          <div class="ant-table-filter-dropdown-btns filter-buttons">
+            <button nz-button nzSize="small" (click)="resetCascFilters()">Сбросить</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="applyCascFilters()">Применить</button>
+          </div>
+        </div>
+      </nz-dropdown-menu>
     </nz-spin>
   </nz-card>
 </div>
