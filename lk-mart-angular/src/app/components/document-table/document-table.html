@@ -98,24 +98,51 @@
             <th nzCustomFilter>
               Подсистема
               <nz-filter-trigger
-                [(nzVisible)]="filterVisible"
-                [nzActive]="isCascFilterActive()"
+                [nzVisible]="activeColumn === 'subsystem' && filterVisible"
+                (nzVisibleChange)="onFilterVisibleChange($event, 'subsystem')"
+                [nzActive]="isSubsystemFilterActive()"
                 [nzDropdownMenu]="cascMenu">
                 <span
                   nz-tooltip
-                  [nzTooltipTitle]="isCascFilterActive() ? getFilterSummary() : 'Фильтр'">
+                  [nzTooltipTitle]="isSubsystemFilterActive() ? getFilterSummary() : 'Фильтр'">
                   <nz-icon
                     nzType="filter"
                     nzTheme="fill"
-                    [ngClass]="{ 'active-icon': isCascFilterActive() }"></nz-icon>
+                    [ngClass]="{ 'active-icon': isSubsystemFilterActive() }"></nz-icon>
                 </span>
               </nz-filter-trigger>
             </th>
 
             <!--   Особенность ant.design ->> Sort: Use [nzSortOrder]
             to make a column sorted by default, use [nzSortFn] to determine sort result, and [nzSortDirections] to define available sort methods       -->
-            <th>Тип документа</th>
-            <th>Статус</th>
+            <th nzCustomFilter>
+              Тип документа
+              <nz-filter-trigger
+                [nzVisible]="activeColumn === 'docType' && filterVisible"
+                (nzVisibleChange)="onFilterVisibleChange($event, 'docType')"
+                [nzActive]="isDocTypeFilterActive()"
+                [nzDropdownMenu]="cascMenu">
+                <span
+                  nz-tooltip
+                  [nzTooltipTitle]="isDocTypeFilterActive() ? getFilterSummary() : 'Фильтр'">
+                  <nz-icon nzType="filter" nzTheme="fill" [ngClass]="{ 'active-icon': isDocTypeFilterActive() }"></nz-icon>
+                </span>
+              </nz-filter-trigger>
+            </th>
+            <th nzCustomFilter>
+              Статус
+              <nz-filter-trigger
+                [nzVisible]="activeColumn === 'docState' && filterVisible"
+                (nzVisibleChange)="onFilterVisibleChange($event, 'docState')"
+                [nzActive]="isDocStateFilterActive()"
+                [nzDropdownMenu]="cascMenu">
+                <span
+                  nz-tooltip
+                  [nzTooltipTitle]="isDocStateFilterActive() ? getFilterSummary() : 'Фильтр'">
+                  <nz-icon nzType="filter" nzTheme="fill" [ngClass]="{ 'active-icon': isDocStateFilterActive() }"></nz-icon>
+                </span>
+              </nz-filter-trigger>
+            </th>
             <th>Пользователи</th>
           </tr>
         </thead>

@@ -89,6 +89,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   // Cascading filter state
   filterVisible = false;
+  activeColumn: 'subsystem' | 'docType' | 'docState' = 'subsystem';
   tempSubsystem: string | null = null;
   tempDocTypeIds: string[] = [];
   tempDocStateMap: { [key: string]: string[] } = {};
@@ -494,6 +495,21 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     return this.selectedOptions.length > 0;
   }
 
+  isSubsystemFilterActive(): boolean {
+    return this.selectedOptions.length > 0;
+  }
+
+  isDocTypeFilterActive(): boolean {
+    return this.selectedOptions.length > 0 &&
+      this.selectedOptions[0].docTypes &&
+      this.selectedOptions[0].docTypes.length > 0;
+  }
+
+  isDocStateFilterActive(): boolean {
+    return this.selectedOptions.length > 0 &&
+      this.selectedOptions[0].docTypes.some(dt => dt.docState && dt.docState.length > 0);
+  }
+
   getFilterSummary(): string {
     if (this.selectedOptions.length === 0) {
       return '';
@@ -514,10 +530,21 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     return summary;
   }
 
+  onFilterVisibleChange(visible: boolean, column: 'subsystem' | 'docType' | 'docState'): void {
+    if (visible) {
+      this.activeColumn = column;
+      this.filterVisible = true;
+    } else {
+      this.filterVisible = false;
+    }
+  }
+
   onTempSubsystemChange(value: string | null): void {
     this.tempSubsystem = value;
     if (value) {
       this.updateCascDocTypeOptions(value);
+      this.activeColumn = 'docType';
+      this.filterVisible = true;
     } else {
       this.cascDocTypeOptions = [];
     }
@@ -536,6 +563,12 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
         delete this.tempDocStateMap[key];
       }
     });
+    if (values.length > 0) {
+      this.activeColumn = 'docState';
+      this.filterVisible = true;
+    } else {
+      this.activeColumn = 'docType';
+    }
   }
 
   toggleTempState(docTypeId: string, state: string, checked: boolean): void {
@@ -572,6 +605,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.updateDocTypeOptions(this.tempSubsystem || '');
     this.updateDocStateOptions(this.tempSubsystem || '', this.tempDocTypeIds);
     this.filterVisible = false;
+    this.activeColumn = 'subsystem';
     this.pageIndex = 1;
     this.loadDocuments();
   }
@@ -584,6 +618,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.cascDocStateOptions = [];
     this.selectedOptions = [];
     this.filterVisible = false;
+    this.activeColumn = 'subsystem';
     this.pageIndex = 1;
     this.loadDocuments();
   }
