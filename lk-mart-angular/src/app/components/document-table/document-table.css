@@ -256,3 +256,31 @@
   word-break: break-word;  /* щадящий перенос */
 }
 
+/* Кастомные каскадные фильтры */
+.cascade-filter {
+  max-width: 240px;
+  padding: 8px;
+}
+
+.filter-select {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.state-collapse {
+  max-height: 260px;
+  overflow: auto;
+  margin-bottom: 8px;
+}
+
+.state-item {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  margin-bottom: 4px;
+}
+
+.active-icon {
+  color: #1890ff;
+}
+
