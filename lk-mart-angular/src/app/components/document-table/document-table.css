@@ -1,14 +1,15 @@
 .document-table-container {
-  padding: 20px;
-  max-width: 1400px;
+  padding: 16px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
 /* Стили для переключателей области */
 .scope-selector {
   margin-bottom: 20px;
-  background: #f5f5f5;
-  border: 1px solid #d9d9d9;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
 }
 
 .scope-selector ::ng-deep .ant-card-body {
@@ -39,8 +40,10 @@
 /* Стили для карточки таблицы */
 .table-card {
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
 }
 
 .table-card ::ng-deep .ant-card-body {
@@ -50,23 +53,29 @@
 /* Стили для таблицы */
 .document-table {
   width: 100%;
+  font-size: 14px;
 }
 
 .document-table ::ng-deep .ant-table-thead > tr > th {
-  background: #fafafa;
+  background: #f0f2f5;
   font-weight: 600;
-  color: #262626;
-  border-bottom: 2px solid #f0f0f0;
+  color: #3f3f3f;
+  border-bottom: 1px solid #e5e5e5;
   padding: 12px 16px;
 }
 
 .document-table ::ng-deep .ant-table-tbody > tr > td {
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f5f5f5;
+  vertical-align: top;
+}
+
+.document-table ::ng-deep .ant-table-tbody > tr:nth-child(odd) > td {
+  background: #fafafa;
 }
 
 .document-table ::ng-deep .ant-table-tbody > tr:hover > td {
-  background: #f5f5f5;
+  background: #e6f7ff;
 }
 
 /* Стили для строк таблицы */
@@ -76,42 +85,44 @@
 }
 
 .table-row:hover {
-  background-color: #f5f5f5;
+  background-color: #e6f7ff;
 }
 
 /* Стили для номера документа */
 .doc-num {
   font-weight: 500;
-  color: #1890ff;
+  color: #1677ff;
 }
 
 /* Ссылка на тип документа */
 .doc-type-link {
-  color: #1890ff;
+  color: #1677ff;
   cursor: pointer;
   text-decoration: underline;
 }
 
 /* Стили для ссылки подсистемы */
 .subsystem-link {
-  color: #1890ff;
+  color: #1677ff;
   text-decoration: underline;
   transition: color 0.2s ease;
 }
 
 .subsystem-link:hover {
-  color: #40a9ff;
+  color: #0958d9;
 }
 
 /* Стили для тегов статуса */
 .status-tag {
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: 2px;
+  padding: 0 8px;
+  line-height: 22px;
 }
 
 /* Стили для аватаров пользователей */
 .user-avatar {
-  background: #1890ff;
+  background: #1677ff;
   color: white;
   font-weight: 500;
 }
@@ -295,7 +306,7 @@
 }
 
 .active-icon {
-  color: #1890ff;
+  color: #1677ff;
 }
 
 .filter-buttons {

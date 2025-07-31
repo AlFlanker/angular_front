@@ -42,6 +42,7 @@
     <nz-spin [nzSpinning]="loading" nzTip="Загрузка документов...">
       <nz-table
         #basicTable
+        nzSize="middle"
         [nzScroll]="{ y: '700px' }"
         [nzData]="documents"
         [nzPageIndex]="pageIndex"
