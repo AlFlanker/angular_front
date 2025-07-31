@@ -225,7 +225,14 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
         direction: direction
       }
       // 1 Фильтр сортировки на запрос
-      this.currentSort = [sortCriterion];
+      let findIndex = this.currentSort
+        .findIndex(e => e.field === columnName);
+
+      if (findIndex > -1 ) {
+        this.currentSort[findIndex] = sortCriterion;
+      } else {
+        this.currentSort.push(sortCriterion);
+      }
     } else {
       delete this.sortState[columnName];
       const existingSortIndex = this.currentSort.findIndex(
