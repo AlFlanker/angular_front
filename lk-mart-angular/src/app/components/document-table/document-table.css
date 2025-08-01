@@ -7,8 +7,8 @@
 /* Стили для переключателей области */
 .scope-selector {
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
-  border: none;
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
 }
 
 .scope-selector ::ng-deep .ant-card-body {
@@ -17,19 +17,18 @@
 
 .scope-buttons {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .scope-button {
   min-width: 180px;
   height: 40px;
   font-weight: 500;
-  transition: all 0.3s ease;
 }
 
 .scope-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
 }
 
 /* Стили для сообщения об ошибке */
@@ -84,6 +83,13 @@
 .doc-num {
   font-weight: 500;
   color: #1890ff;
+}
+
+/* Ссылка на тип документа */
+.doc-type-link {
+  color: #1890ff;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 /* Стили для ссылки подсистемы */
@@ -249,3 +255,4 @@
   white-space: normal;     /* разрешает перенос */
   word-break: break-word;  /* щадящий перенос */
 }
+

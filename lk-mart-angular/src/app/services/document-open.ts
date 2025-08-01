@@ -68,6 +68,27 @@ export class DocumentOpenService {
   }
 
   /**
+   * Отправляет сообщение для открытия документа через postMessage
+   * @param document - документ для открытия
+   */
+  openDocumentPostMessage(document: Document): void {
+    if (document && document.docGUID) {
+      const target = window.opener || window.parent;
+      if (target) {
+        target.postMessage(
+          {
+            type: 'openDocument',
+            documentId: document.docGUID,
+            subsystem: document.subsystem,
+            docType: document.docTypeId
+          },
+          '*'
+        );
+      }
+    }
+  }
+
+  /**
    * Скачивает документ
    * @param document - документ для скачивания
    */
@@ -88,3 +109,4 @@ export class DocumentOpenService {
     }
   }
 }
+

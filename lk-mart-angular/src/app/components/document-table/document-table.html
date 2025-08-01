@@ -1,25 +1,30 @@
 <div class="document-table-container">
   <!-- Заголовок с переключателями области -->
   <nz-card class="scope-selector">
-    <div class="scope-buttons">
-      <button
-        [class]="'ant-btn scope-button ' + (isScopeActive('USER') ? 'ant-btn-primary' : 'ant-btn-default')"
-        (click)="switchScope('USER')">
-        <span nz-icon nzType="user" nzTheme="outline"></span>
-        Мои документы
-      </button>
-      <button
-        [class]="'ant-btn scope-button ' + (isScopeActive('ORG') ? 'ant-btn-primary' : 'ant-btn-default')"
-        (click)="switchScope('ORG')">
-        <span nz-icon nzType="bank" nzTheme="outline"></span>
-        Документы организации
-      </button>
-    </div>
-    <div>
+    <nz-space nzAlign="center" nzSize="middle" class="scope-buttons">
+      <nz-button-group>
+        <button
+          nz-button
+          class="scope-button"
+          [nzType]="isScopeActive('USER') ? 'primary' : 'default'"
+          (click)="switchScope('USER')">
+          <span nz-icon nzType="user"></span>
+          Мои документы
+        </button>
+        <button
+          nz-button
+          class="scope-button"
+          [nzType]="isScopeActive('ORG') ? 'primary' : 'default'"
+          (click)="switchScope('ORG')">
+          <span nz-icon nzType="bank"></span>
+          Документы организации
+        </button>
+      </nz-button-group>
       <button nz-button nzType="default" (click)="resetAllFilters()">
-        <span nz-icon nzType="close-circle"></span> Сбросить фильтры
+        <span nz-icon nzType="close-circle"></span>
+        Сбросить фильтры
       </button>
-    </div>
+    </nz-space>
   </nz-card>
 
   <!-- Сообщение об ошибке -->
@@ -53,7 +58,7 @@
         class="document-table">
 
         <!-- Колонка: Номер документа -->
-        <thead>
+        <thead (nzSortOrderChange)="onSortChange($event)">
           <tr>
             <th
               nzColumnKey="doc_num"
@@ -98,6 +103,7 @@
                 [nzFilterFn]="true"
                 (nzFilterChange)="onSubsystemFilter($event)"
                 [nzFilterMultiple]="false"
+                [nzFilterValue]="subsystemFilteredValue"
               >Подсистема</th>
             }
             <!--   Особенность ant.design ->> Sort: Use [nzSortOrder]
@@ -110,7 +116,18 @@
               Тип документа
             </th>
             } @else {
-              <th>Тип документа</th>
+              @if (docTypeFiltersOptions.length > 0) {
+                <th
+                  [nzFilters]="docTypeFiltersOptions"
+                  [nzFilterMultiple]="true"
+                  [nzFilterFn]="true"
+                  (nzFilterChange)="onDocTypeFilter($event)"
+                  [nzFilterValue]="docTypeFilteredValue">
+                  Тип документа
+                </th>
+              } @else {
+                <th>Тип документа</th>
+              }
             }
             @if (isColumnSortable('doc_state')) {
             <th
@@ -120,7 +137,18 @@
               Статус
             </th>
             } @else {
-              <th>Статус</th>
+              @if (docStateFiltersOptions.length > 0) {
+                <th
+                  [nzFilters]="docStateFiltersOptions"
+                  [nzFilterMultiple]="true"
+                  [nzFilterFn]="true"
+                  (nzFilterChange)="onDocStateFilter($event)"
+                  [nzFilterValue]="docStateFilteredValue">
+                  Статус
+                </th>
+              } @else {
+                <th>Статус</th>
+              }
             }
             <th>Пользователи</th>
           </tr>
@@ -133,7 +161,11 @@
               <!-- Номер документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography class="doc-num">{{ document.document.docNum }}</span>
+                  <span
+                    nz-typography
+                    class="doc-num"
+                    (click)="onDocNumClick(document, $event)"
+                  >{{ document.document.docNum }}</span>
                 </nz-typography>
               </td>
 
@@ -177,7 +209,11 @@
               <!-- Тип документа -->
               <td>
                 <nz-typography>
-                  <span nz-typography>{{ document.docTypeName }}</span>
+                  <span
+                    nz-typography
+                    class="doc-type-link"
+                    (click)="onDocTypeClick(document); $event.stopPropagation()"
+                  >{{ document.docTypeName }}</span>
                 </nz-typography>
               </td>
 
