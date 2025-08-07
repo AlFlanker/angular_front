@@ -599,16 +599,16 @@
           <div class="filter-content">
             <div class="select-group">
               <label class="select-label">Статус документа</label>
-              <nz-select
-                nzMode="multiple"
+              <nz-tree-select
+                nzCheckable
+                nzMultiple
+                [nzDefaultExpandAll]="true"
+                [nzNodes]="statusTreeNodes"
                 nzPlaceHolder="Выберите статусы"
                 [(ngModel)]="tempStatusFilter"
                 (ngModelChange)="onTempStatusFilterChange($event)"
                 class="filter-select">
-                @for (o of statusFilterOptions; track o.value) {
-                 <nz-option [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
-                }
-              </nz-select>
+              </nz-tree-select>
             </div>
 
             <div class="filter-actions">
