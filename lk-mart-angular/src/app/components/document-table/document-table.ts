@@ -21,6 +21,7 @@ import {NzDropDownModule} from 'ng-zorro-antd/dropdown';
 import {NzSelectModule} from 'ng-zorro-antd/select';
 import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
 import {NzCollapseModule} from 'ng-zorro-antd/collapse';
+import {NzTreeSelectModule} from 'ng-zorro-antd/tree-select';
 import {NzMessageService} from 'ng-zorro-antd/message';
 import {NzNotificationService} from 'ng-zorro-antd/notification';
 import {
@@ -38,6 +39,7 @@ import {
   SortDirection,
   SubsystemFilter
 } from '../../models/types';
+import {NzTreeNodeOptions} from 'ng-zorro-antd/core/tree';
 import {DocumentApiService} from '../../services/document-api';
 import {DocumentOpenService} from '../../services/document-open';
 import {NavigationNodesService} from '../../services/navigation-nodes';
@@ -69,6 +71,7 @@ import {NzCalendarComponent} from 'ng-zorro-antd/calendar';
     NzSelectModule,
     NzCheckboxModule,
     NzCollapseModule,
+    NzTreeSelectModule,
     NzTooltipDirective,
     NzCalendarComponent
   ],
@@ -109,7 +112,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   allStatusOptions: StatusOption[] = [];
   // доступные опции для селектов
   docTypeFilterOptions: DocTypeOption[] = [];
-  statusFilterOptions: StatusOption[] = [];
+  statusTreeNodes: NzTreeNodeOptions[] = [];
 
   // Каскадные фильтры
   dateFilterVisible = false;
@@ -516,7 +519,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.statusFilterValue = [];
     this.tempStatusFilter = [];
     this.docTypeFilterOptions = [];
-    this.statusFilterOptions = [];
+    this.statusTreeNodes = [];
     this.subsystemFilterVisible = false;
   }
 
@@ -561,7 +564,11 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   }
 
   getCurrentStatus(): string {
-    return this.statusFilterValue.length > 0 ? this.statusFilterValue.join(', ') : '';
+    return this.statusFilterValue.length > 0
+      ? this.statusFilterValue
+          .map(val => this.allStatusOptions.find(o => o.value === val)?.label || val)
+          .join(', ')
+      : '';
   }
 
   onStatusFilterOpen(): void {
@@ -727,13 +734,24 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   private updateStatusFilterOptions(docTypeIds: string[]): void {
     const subsystem = this.tempSubsystemFilter || this.subsystemFilterValue;
     if (!subsystem || docTypeIds.length === 0) {
-      this.statusFilterOptions = [];
+      this.statusTreeNodes = [];
       return;
     }
 
-    this.statusFilterOptions = this.allStatusOptions.filter(
-      st => st.subsystem.value === subsystem && docTypeIds.includes(st.docType.value)
-    );
+    this.statusTreeNodes = docTypeIds.map(docTypeId => {
+      const docTypeOption = this.allDocTypeOptions.find(
+        dt => dt.value === docTypeId && dt.subsystem.value === subsystem
+      );
+      const children = this.allStatusOptions
+        .filter(st => st.subsystem.value === subsystem && st.docType.value === docTypeId)
+        .map(st => ({ title: st.label, key: st.value, isLeaf: true }));
+      return {
+        title: docTypeOption?.label || docTypeId,
+        key: docTypeId,
+        selectable: false,
+        children
+      } as NzTreeNodeOptions;
+    });
   }
 
   /**
@@ -909,7 +927,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
         this.updateDocTypeFilterOptions(this.subsystemFilterValue);
       } else {
         this.docTypeFilterOptions = [];
-        this.statusFilterOptions = [];
+        this.statusTreeNodes = [];
       }
     }
 
@@ -953,7 +971,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.allDocTypeOptions = [];
     this.allStatusOptions = [];
     this.docTypeFilterOptions = [];
-    this.statusFilterOptions = [];
+    this.statusTreeNodes = [];
 
     // Сброс сортировки(пока условно)
     this.currentSort = [];
