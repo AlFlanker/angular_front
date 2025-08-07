@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
+import {Document} from '../models/types';
 
 // Типы для ELK
 interface ELKPubSub {
@@ -37,17 +38,6 @@ export class PubsubService {
     return !!(parentWindow && parentWindow.ELK && parentWindow.ELK.pubsub);
   }
 
-  /**
-   * Проверяет доступность ELK и выбрасывает ошибку если недоступен
-   * @throws {Error} если ELK недоступен
-   */
-  private ensureElkAvailable(): void {
-    if (!this.isElkAvailable()) {
-      console.warn('ELK.pubsub не найден в родительском окне');
-      // throw new Error('ELK.pubsub не найден в родительском окне');
-    }
-  }
-
   constructor() {
     // Проверяем доступность при инициализации
     if (!this.isElkAvailable()) {
@@ -67,19 +57,6 @@ export class PubsubService {
     }
     const parentWindow = window.parent as WindowWithELK;
     parentWindow.ELK!.pubsub.subscribe(event, callback);
-  }
-
-  /**
-   * Отписка от события (закомментировано, так как ELK не поддерживает отписку)
-   * @param event - название события
-   * @param handler - обработчик события
-   */
-  unsubscribe(event: string, handler: (data: any) => void): void {
-    // TODO: Раскомментировать когда ELK будет поддерживать отписку
-    // if (this.isElkAvailable()) {
-    //   const parentWindow = window.parent as WindowWithELK;
-    //   parentWindow.ELK!.pubsub.unsubscribe!(event, handler);
-    // }
   }
 
   /**
@@ -103,76 +80,16 @@ export class PubsubService {
   publishOpenDocumentList(node: any): void {
     this.publish('openDocumentListIframe', { node: node });
   }
-
-  /**
-   * Публикация события выбора навигационного узла
-   * @param node - выбранный узел
-   * @param subsystem - подсистема
-   * @param docType - тип документа
-   */
-  publishNavigationNodeSelected(node: any, subsystem: string, docType: string): void {
-    this.publish('navigationNode.selected', {
-      node: node,
-      subsystem: subsystem,
-      docType: docType,
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  /**
-   * Публикация события отмены выбора навигационного узла
-   * @param subsystem - подсистема
-   * @param docType - тип документа
-   * @param availableNodes - количество доступных узлов
-   */
-  publishNavigationNodeCancelled(subsystem: string, docType: string, availableNodes: number): void {
-    this.publish('navigationNode.cancelled', {
-      subsystem: subsystem,
-      docType: docType,
-      availableNodes: availableNodes,
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  /**
-   * Публикация события открытия модального окна
-   * @param subsystem - подсистема
-   * @param docType - тип документа
-   * @param availableNodes - количество доступных узлов
-   */
-  publishModalOpened(subsystem: string, docType: string, availableNodes: number): void {
-    this.publish('navigationNode.modal.opened', {
-      subsystem: subsystem,
-      docType: docType,
-      availableNodes: availableNodes,
-      timestamp: new Date().toISOString()
-    });
-  }
-
   /**
    * Публикация события выбора документа
-   * @param documentId - ID документа
-   * @param documentName - название документа
-   * @param action - действие
    */
-  publishDocumentSelected(documentId: string, documentName: string, action: string): void {
-    this.publish('documentSelected', {
-      documentId: documentId,
-      documentName: documentName,
-      action: action
-    });
-  }
-
-  /**
-   * Публикация события обновления данных
-   * @param type - тип данных
-   * @param count - количество элементов
-   */
-  publishDataRefreshed(type: string, count: number): void {
-    this.publish('dataRefreshed', {
-      type: type,
-      count: count,
-      timestamp: Date.now()
+  publishDocumentSelected(document: Document): void {
+    this.publish('openDocumentByLink', {
+      title: 'Документ',
+      globalDocumentId: document.docGUID,
+      action: 'EDIT',
+      documentType: document.docTypeId,
+      subSystem: document.subsystem
     });
   }
 }

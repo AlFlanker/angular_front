@@ -1,0 +1,67 @@
+<nz-modal
+  [(nzVisible)] = "isVisible"
+  (nzOnCancel)="closeModal()"
+  (nzOnOk)="confirmSelection()"
+  [nzFooter]="modalFooter"
+  [nzContent]="modalContent"
+  nzTitle="Выбор навигационного узла">
+  <ng-template #modalContent>
+    <!-- Информация о запросе -->
+    <nz-descriptions [nzColumn]="1">
+      <nz-descriptions-item nzTitle="Подсистема">
+        {{ subsystem }}
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Тип документа">
+        {{ docType }}
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Доступно узлов">
+        {{ nodes.length }}
+      </nz-descriptions-item>
+    </nz-descriptions>
+
+    <!-- Список навигационных узлов -->
+    @if(nodes.length > 0) {
+      <div class="nodes-list">
+        @for (node of nodes; track node.subsystem) {
+          <div class="node-item"
+               [class.selected]="selectedNode?.id === node.id"
+               (click)="selectNode(node)"
+               (keydown)="selectNode(node)">
+              <div class="node-name">{{ node.name }}</div>
+              <div class="node-details">
+                <span>Имя: {{ node.name }}</span>
+                <span>ID: {{ node.id }}</span>
+              </div>
+              <div class="node-url">{{ node.url }}</div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Сообщение об отсутствии узлов -->
+    @if (nodes.length === 0) {
+      <div class="no-nodes">
+        <p>Навигационные узлы не найдены</p>
+        <p>Попробуйте изменить параметры поиска</p>
+      </div>
+    }
+  </ng-template>
+
+  <!-- Футер модального окна -->
+  <ng-template #modalFooter>
+    <div nz-flex nzGap="middle">
+      <button nz-button
+        nzType="primary"
+        (click)="closeModal()">
+        Отмена
+      </button>
+      <button nz-button
+        nzType="default"
+        [disabled]="!selectedNode"
+        (click)="confirmSelection()">
+        Выбрать
+      </button>
+    </div>
+  </ng-template>
+
+</nz-modal>

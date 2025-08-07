@@ -1,15 +1,16 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { DocumentsPageResponse, Document, DocumentParams, Scope, SubsystemFilterItem, DocTypeStateFilter, SortCriterion, SortDirection } from '../models/types';
-import { environment } from '../../environments/environment';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {DocumentParams, DocumentsPageResponse, Scope} from '../models/types';
+import {environment} from '../../environments/environment';
+import {CONTEXT_PATH_URL} from './context-config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DocumentApiService {
 
-  private readonly API_BASE_URL = `${environment.apiUrl}/documents`; // Базовый URL для API
+  private readonly API_BASE_URL = `${CONTEXT_PATH_URL}${environment.apiUrl}/documents`;
 
   constructor(private http: HttpClient) {}
 

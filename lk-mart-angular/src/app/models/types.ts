@@ -1,7 +1,3 @@
-/**
- * Интерфейсы для типов данных приложения LK Mart
- */
-
 export interface NavigationNode {
   id: string;
   name: string;
@@ -39,13 +35,6 @@ export interface PaginationInfo {
   hasPrevious: boolean;
 }
 
-// Устаревший интерфейс - заменен на DocumentsPageResponse
-export interface DocumentsResponse {
-  documents: Document[];
-  pagination: PaginationInfo;
-}
-
-// Новые типы для обновленного API
 export enum Scope {
   USER = 'USER',
   ORG = 'ORG'
@@ -61,21 +50,32 @@ export interface SortCriterion {
   direction: SortDirection;
 }
 
-export interface DocTypeStateFilter {
-  docTypeId: string;
-  docState?: string[];
+export interface DocumentTypeFilter {
+  documentTypeId: string;
+  documentStates?: string[];
 }
 
-export interface SubsystemFilterItem {
+export interface SubsystemFilter {
   subsystem: string;
-  docTypes?: DocTypeStateFilter[];
+  documentTypes?: DocumentTypeFilter[];
 }
 
 export interface DocumentParams {
   page: number;
   size: number;
-  filters: SubsystemFilterItem[];
+  filters: DocumentFilters;
   sort: SortCriterion[];
+}
+
+export interface DocumentFilters {
+  subsystemFilters?: SubsystemFilter[] | null,
+  columnFilters?: ColumnFilter[] | null,
+  filterDate?: Date | null
+}
+
+export interface ColumnFilter {
+  column: string,
+  searchValue: string
 }
 
 export interface PaginatedDocumentsResponse {
@@ -107,44 +107,18 @@ export interface DocumentsPageResponse {
   appliedSort: SortCriterion[];
 }
 
-export interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
 export interface ModalData {
   nodes: NavigationNode[];
   subsystem: string;
   docType: string;
 }
 
-// AG Grid типы
-export interface AgGridColumnDef {
-  field: string;
-  headerName: string;
-  sortable?: boolean;
-  filter?: boolean;
-  filterParams?: any;
-  width?: number;
-  minWidth?: number;
-  maxWidth?: number;
-  flex?: number;
-  cellRenderer?: string | any;
-  cellRendererParams?: any;
-  valueFormatter?: (params: any) => string;
-  pinned?: 'left' | 'right';
-  resizable?: boolean;
-  suppressMenu?: boolean;
-  menuTabs?: string[];
-}
-
-export interface AgGridFilterModel {
-  [key: string]: any;
-}
-
-export interface AgGridSortModel {
-  colId: string;
-  sort: 'asc' | 'desc';
+export interface AppliedFilters {
+  docNum: string | null;
+  account: string | null;
+  tofk: string | null;
+  subsystem: string | null;
+  docType: string[];
+  status: string[];
+  date: Date | null;
 }

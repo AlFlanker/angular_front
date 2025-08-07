@@ -1,24 +1,16 @@
-import { Injectable } from '@angular/core';
-import { Observable, from } from 'rxjs';
-import { NavigationNode } from '../models/types';
-import { PubsubService } from './pubsub';
+import {Injectable} from '@angular/core';
+import {from, Observable} from 'rxjs';
+import {NavigationNode} from '../models/types';
+import {PubsubService} from './pubsub';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NavigationNodesService {
-  
-  private readonly REQUEST_TIMEOUT_MS = 10000;
-  
-  constructor(private pubsubService: PubsubService) {}
 
-  /**
-   * Генерирует уникальный идентификатор запроса
-   * @returns уникальный ID
-   */
-  private generateRequestId(): string {
-    return 'req_' + Date.now();
-  }
+  private readonly REQUEST_TIMEOUT_MS = 10000;
+
+  constructor(private pubsubService: PubsubService) {}
 
   /**
    * Получает навигационные узлы из родительского окна
@@ -40,12 +32,12 @@ export class NavigationNodesService {
     return new Promise((resolve, reject) => {
       const requestId = this.generateRequestId();
       let timeoutId: number;
-      
+
       // Создаем обработчик ответа
       const responseHandler = (response: any) => {
         if (response.requestId === requestId) {
           clearTimeout(timeoutId);
-          
+
           if (response.error) {
             reject(new Error(response.error));
           } else {
@@ -53,16 +45,16 @@ export class NavigationNodesService {
           }
         }
       };
-      
+
       // Устанавливаем таймаут
       timeoutId = window.setTimeout(() => {
         reject(new Error('Таймаут запроса навигационных узлов'));
       }, this.REQUEST_TIMEOUT_MS);
-      
+
       try {
         // Подписываемся на ответ
         this.pubsubService.subscribe('navigationNodesResponse', responseHandler);
-        
+
         // Отправляем запрос
         this.pubsubService.publish('getNavigationNodes', {
           backend: backend,
@@ -75,4 +67,13 @@ export class NavigationNodesService {
       }
     });
   }
+
+  /**
+   * Генерирует уникальный идентификатор запроса
+   * @returns уникальный ID
+   */
+  private generateRequestId(): string {
+    return 'req_' + Date.now();
+  }
+
 }

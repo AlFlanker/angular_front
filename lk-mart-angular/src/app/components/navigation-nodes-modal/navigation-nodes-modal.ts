@@ -1,19 +1,23 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
-import { NavigationNode, ModalData } from '../../models/types';
-import { ModalService } from '../../services/modal';
-import { PubsubService } from '../../services/pubsub';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Subscription} from 'rxjs';
+import {NavigationNode} from '../../models/types';
+import {ModalService} from '../../services/modal';
+import {PubsubService} from '../../services/pubsub';
+import {NzModalComponent} from 'ng-zorro-antd/modal';
+import {NzButtonComponent} from 'ng-zorro-antd/button';
+import {NzFlexDirective} from 'ng-zorro-antd/flex';
+import {NzDescriptionsComponent, NzDescriptionsItemComponent} from 'ng-zorro-antd/descriptions';
 
 @Component({
   selector: 'app-navigation-nodes-modal',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './navigation-nodes-modal.html',
+  imports: [CommonModule, NzModalComponent, NzButtonComponent, NzFlexDirective, NzDescriptionsComponent, NzDescriptionsItemComponent],
+  templateUrl: './nz-navigation-nodes-modal.html',
   styleUrl: './navigation-nodes-modal.css'
 })
 export class NavigationNodesModalComponent implements OnInit, OnDestroy {
-  
+
   isVisible = false;
   nodes: NavigationNode[] = [];
   selectedNode: NavigationNode | null = null;
@@ -33,7 +37,7 @@ export class NavigationNodesModalComponent implements OnInit, OnDestroy {
       this.showModal(data.nodes, data.subsystem, data.docType);
     });
   }
-  
+
   ngOnDestroy(): void {
     // Отписываемся от событий
     if (this.subscription) {
@@ -48,25 +52,25 @@ export class NavigationNodesModalComponent implements OnInit, OnDestroy {
    * @param docType - тип документа
    */
   showModal(nodes: NavigationNode[], subsystem: string, docType: string): void {
+    //  Если узел один, то давать выбор нет смысла
+    if (nodes && nodes.length === 1) {
+      this.selectedNode = nodes[0];
+      // Отправляем запрос на открытие списковой формы
+      this.pubsubService.publishOpenDocumentList(this.selectedNode);
+      return;
+    }
+
     this.nodes = nodes || [];
     this.subsystem = subsystem || '';
     this.docType = docType || '';
     this.selectedNode = null;
     this.isVisible = true;
-    
-    // Формируем событие об открытии модального окна
-    this.pubsubService.publishModalOpened(subsystem, docType, nodes.length);
   }
 
   /**
    * Закрывает модальное окно
    */
   closeModal(): void {
-    // Если модальное окно было открыто, но узел не выбран, формируем событие отмены
-    if (this.isVisible && this.nodes.length > 0) {
-      this.pubsubService.publishNavigationNodeCancelled(this.subsystem, this.docType, this.nodes.length);
-    }
-    
     this.isVisible = false;
     this.nodes = [];
     this.selectedNode = null;
@@ -85,23 +89,10 @@ export class NavigationNodesModalComponent implements OnInit, OnDestroy {
    */
   confirmSelection(): void {
     if (this.selectedNode) {
-      // Формируем событие о выборе навигационного узла
-      this.pubsubService.publishNavigationNodeSelected(this.selectedNode, this.subsystem, this.docType);
-      
       // Отправляем запрос на открытие списковой формы
       this.pubsubService.publishOpenDocumentList(this.selectedNode);
-      
-      // Закрываем модальное окно
-      this.closeModal();
-    }
-  }
 
-  /**
-   * Обработчик клика по фону модального окна
-   * @param event - событие клика
-   */
-  onOverlayClick(event: Event): void {
-    if (event.target === event.currentTarget) {
+      // Закрываем модальное окно
       this.closeModal();
     }
   }

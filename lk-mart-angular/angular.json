@@ -33,10 +33,11 @@
                 "input": "public"
               }
             ],
-                          "styles": [
-                "src/styles.css",
-                "node_modules/ng-zorro-antd/ng-zorro-antd.min.css"
-              ]
+            "styles": [
+              "src/styles.css",
+              "node_modules/ng-zorro-antd/ng-zorro-antd.min.css"
+            ],
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -48,11 +49,11 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "12kB",
+                  "maximumError": "16kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "none"
             },
             "development": {
               "optimization": false,

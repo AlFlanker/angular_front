@@ -1,7 +1,13 @@
 .document-table-container {
-  padding: 16px;
-  max-width: 1280px;
-  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  animation: fadeIn 0.3s ease-out;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Стили для переключателей области */
@@ -9,11 +15,13 @@
   margin-bottom: 20px;
   background: #fafafa;
   border: 1px solid #e5e5e5;
-  border-radius: 6px;
+  border-radius: 0;
+  width: 100%;
 }
 
 .scope-selector ::ng-deep .ant-card-body {
   padding: 16px;
+  width: 100%;
 }
 
 .scope-buttons {
@@ -39,25 +47,65 @@
 
 /* Стили для карточки таблицы */
 .table-card {
-  margin-bottom: 20px;
+  margin-bottom: 0;
   background: #ffffff;
   border: 1px solid #e5e5e5;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border-radius: 6px;
+  border-radius: 0;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .table-card ::ng-deep .ant-card-body {
   padding: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Стили для таблицы */
 .document-table {
   width: 100%;
   font-size: 14px;
+  flex: 1;
+  table-layout: fixed;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.document-table ::ng-deep .ant-table {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.document-table ::ng-deep .ant-table-wrapper {
+  width: 100%;
+  border-radius: 0;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.document-table ::ng-deep .ant-table-container {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .document-table ::ng-deep .ant-table-thead > tr > th {
-  background: #f0f2f5;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #d9d9d9 100%);
   font-weight: 600;
   color: #3f3f3f;
   border-bottom: 1px solid #e5e5e5;
@@ -66,7 +114,7 @@
 
 .document-table ::ng-deep .ant-table-tbody > tr > td {
   padding: 12px 16px;
-  border-bottom: 1px solid #f5f5f5;
+  border: 1px solid #ccc;
   vertical-align: top;
 }
 
@@ -91,15 +139,9 @@
 /* Стили для номера документа */
 .doc-num {
   font-weight: 500;
-  color: #1677ff;
+  color: #000000;
 }
 
-/* Ссылка на тип документа */
-.doc-type-link {
-  color: #1677ff;
-  cursor: pointer;
-  text-decoration: underline;
-}
 
 /* Стили для ссылки подсистемы */
 .subsystem-link {
@@ -112,6 +154,17 @@
   color: #0958d9;
 }
 
+/* Стили для ссылки типа документа */
+.doc-type-link {
+  color: #1677ff;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.doc-type-link:hover {
+  color: #0958d9;
+}
+
 /* Стили для тегов статуса */
 .status-tag {
   font-weight: 500;
@@ -120,55 +173,37 @@
   line-height: 22px;
 }
 
-/* Стили для аватаров пользователей */
-.user-avatar {
-  background: #1677ff;
-  color: white;
-  font-weight: 500;
-}
-
-/* Стили для карточки выбранного документа */
-.selected-doc-card {
-  background: #f8f9fa;
-  border-left: 4px solid #1890ff;
-  margin-top: 20px;
-}
-
-.selected-doc-card ::ng-deep .ant-card-head {
-  background: #f0f0f0;
-  border-bottom: 1px solid #d9d9d9;
-}
-
-.selected-doc-card ::ng-deep .ant-card-head-title {
-  color: #1890ff;
-  font-weight: 600;
-}
-
-/* Стили для описаний */
-.selected-doc-card ::ng-deep .ant-descriptions-item-label {
-  font-weight: 600;
-  color: #262626;
-}
-
-.selected-doc-card ::ng-deep .ant-descriptions-item-content {
-  color: #595959;
-}
-
 /* Стили для пагинации */
 .document-table ::ng-deep .ant-pagination {
-  margin: 16px;
+  margin: 8px 16px;
   text-align: right;
+  width: 100%;
+  padding: 0 16px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
 }
 
 /* Стили для спиннера */
 .document-table ::ng-deep .ant-spin-container {
-  min-height: 400px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Адаптивность */
+@media (max-width: 1024px) {
+  .document-table-container {
+    padding: 0;
+    height: 100vh;
+  }
+}
+
 @media (max-width: 768px) {
   .document-table-container {
-    padding: 10px;
+    padding: 0;
+    height: 100vh;
   }
 
   .scope-buttons {
@@ -187,10 +222,61 @@
     font-size: 12px;
   }
 
-  .selected-doc-card ::ng-deep .ant-descriptions-row > th,
-  .selected-doc-card ::ng-deep .ant-descriptions-row > td {
-    padding: 8px 12px;
-    font-size: 12px;
+  .document-table ::ng-deep .ant-pagination {
+    margin: 6px 12px;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .document-table-container {
+    padding: 0;
+    height: 100vh;
+  }
+
+  .document-table ::ng-deep .ant-table-thead > tr > th,
+  .document-table ::ng-deep .ant-table-tbody > tr > td {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .table-card {
+    margin-bottom: 0;
+  }
+
+  .scope-selector {
+    margin-bottom: 12px;
+  }
+
+  .document-table ::ng-deep .ant-pagination {
+    margin: 4px 8px;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .document-table-container {
+    padding: 0;
+    height: 100vh;
+  }
+
+  .document-table ::ng-deep .ant-table-thead > tr > th,
+  .document-table ::ng-deep .ant-table-tbody > tr > td {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .table-card {
+    margin-bottom: 0;
+  }
+
+  .scope-selector {
+    margin-bottom: 8px;
+  }
+
+  .document-table ::ng-deep .ant-pagination {
+    margin: 3px 6px;
+    padding: 0 6px;
   }
 }
 
@@ -206,19 +292,25 @@
   }
 }
 
-.document-table-container {
-  animation: fadeIn 0.3s ease-out;
-}
-
 /* Кастомные стили для Ant Design компонентов */
 ::ng-deep .ant-table-wrapper {
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
+  width: 100%;
 }
 
 ::ng-deep .ant-card {
-  border-radius: 8px;
+  border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+::ng-deep .ant-table {
+  width: 100%;
+}
+
+::ng-deep .ant-table-container {
+  width: 100%;
 }
 
 ::ng-deep .ant-btn {
@@ -254,6 +346,70 @@
   overflow: hidden;
 }
 
+/* Стили для кнопки применения фильтров */
+.apply-filters-button {
+  position: relative;
+}
+
+.apply-filters-button.has-pending-filters {
+  background: #faad14;
+  border-color: #faad14;
+  color: #ffffff;
+}
+
+.apply-filters-button.has-pending-filters:hover {
+  background: #d48806;
+  border-color: #d48806;
+}
+
+/* Стили для кнопки обновления */
+.apply-filters-button:not(.has-pending-filters) {
+  background: #52c41a;
+  border-color: #52c41a;
+  color: #ffffff;
+}
+
+.apply-filters-button:not(.has-pending-filters):hover {
+  background: #389e0d;
+  border-color: #389e0d;
+}
+
+/* Стили для неактивной кнопки обновления */
+.apply-filters-button:disabled {
+  background: #d9d9d9 !important;
+  border-color: #d9d9d9 !important;
+  color: #bfbfbf !important;
+  cursor: not-allowed;
+}
+
+.apply-filters-button:disabled:hover {
+  background: #d9d9d9 !important;
+  border-color: #d9d9d9 !important;
+  color: #bfbfbf !important;
+}
+
+.pending-indicator {
+  margin-left: 6px;
+  color: #ffffff;
+  font-size: 12px;
+  animation: pulse 1.5s infinite;
+}
+
+/* Стили для последнего столбца (кнопка действия) */
+.doc-link-btn {
+  text-align: center;
+  width: 80px;
+  min-width: 80px;
+}
+
+/* Hover эффект для кнопки ссылки на документ */
+.doc-link-btn button:hover {
+  background-color: #e6f7ff;
+  color: #1677ff;
+  transform: scale(1.4);
+  transition: all 0.2s ease;
+}
+
 /* Стили для алертов */
 ::ng-deep .ant-alert {
   border-radius: 6px;
@@ -267,7 +423,101 @@
   word-break: break-word;  /* щадящий перенос */
 }
 
-/* Кастомные каскадные фильтры */
+/* Стили для каскадного фильтра */
+.cascade-filter-dropdown {
+  width: 360px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+  animation: slideInUp 0.2s ease-out;
+}
+
+.select-group {
+  margin-bottom: 16px;
+}
+
+.select-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #595959;
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+.filter-select {
+  width: 100%;
+}
+
+.filter-select ::ng-deep .ant-select-selector {
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.filter-select ::ng-deep .ant-select-focused .ant-select-selector {
+  border-color: #1677ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+}
+
+.collapse-group {
+  margin-bottom: 20px;
+}
+
+.state-collapse {
+  max-height: 200px;
+  overflow: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.state-collapse ::ng-deep .ant-collapse-header {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #262626;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.state-collapse ::ng-deep .ant-collapse-content {
+  background: transparent;
+}
+
+.state-collapse ::ng-deep .ant-collapse-content-box {
+  padding: 8px 12px;
+}
+
+.state-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 4px 0;
+  transition: background 0.2s ease;
+  border-radius: 4px;
+}
+
+.state-item:hover {
+  background: rgba(22, 119, 255, 0.05);
+}
+
+.state-item > label {
+  margin-right: 8px;
+  margin-bottom: 0;
+}
+
+.state-text {
+  font-size: 13px;
+  color: #595959;
+  flex: 1;
+}
+
+/* Кастомные каскадные фильтры*/
 .cascade-filter {
   width: 320px;
   max-width: 320px;
@@ -276,37 +526,59 @@
   min-height: 140px;
 }
 
-.filter-select {
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-.state-collapse {
-  max-height: 260px;
-  overflow: auto;
-  margin-bottom: 8px;
-  transition: max-height 0.2s ease;
-}
-
-.state-collapse .ant-collapse-header {
-  padding: 4px 8px;
-  line-height: 24px;
-}
-
-.state-item {
-  display: flex;
-  align-items: center;
-  margin-right: 8px;
-  margin-bottom: 4px;
-}
-
-/* spacing between checkbox and text */
-.state-item > label {
-  margin-right: 4px;
-}
-
 .active-icon {
   color: #1677ff;
+}
+
+/* Стили для триггера фильтра */
+.filter-trigger-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.filter-trigger-wrapper:hover {
+  background: rgba(22, 119, 255, 0.1);
+}
+
+.filter-trigger-icon {
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.filter-trigger-wrapper:hover .filter-trigger-icon {
+  color: #1677ff;
+  transform: scale(1.1);
+}
+
+.filter-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #ff4d4f;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 77, 79, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0);
+  }
 }
 
 .filter-buttons {
@@ -315,3 +587,276 @@
   gap: 8px;
 }
 
+/* Стили для фильтра номера документа */
+.doc-num-filter-dropdown {
+  width: 320px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+  animation: slideInUp 0.2s ease-out;
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #f5f5f5;
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+}
+
+.filter-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  letter-spacing: 0.02em;
+}
+
+.close-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #f0f0f0;
+  color: #595959;
+}
+
+.filter-content {
+  padding: 20px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: #bfbfbf;
+  font-size: 14px;
+  z-index: 1;
+  transition: color 0.2s ease;
+}
+
+.filter-input {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px 8px 36px;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: #fafafa;
+}
+
+.filter-input:focus {
+  border-color: #1677ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+  outline: none;
+}
+
+.filter-input:focus + .input-icon {
+  color: #1677ff;
+}
+
+.filter-input::placeholder {
+  color: #bfbfbf;
+  font-size: 13px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.reset-button,
+.apply-button {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.reset-button {
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  color: #595959;
+}
+
+.reset-button:hover {
+  background: #e6e6e6;
+  border-color: #bfbfbf;
+  color: #262626;
+}
+
+.apply-button {
+  background: #1677ff;
+  border: 1px solid #1677ff;
+  color: #ffffff;
+}
+
+.apply-button:hover:not(:disabled) {
+  background: #0958d9;
+  border-color: #0958d9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+}
+
+.apply-button:disabled {
+  background: #f5f5f5;
+  border-color: #d9d9d9;
+  color: #bfbfbf;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Анимация появления фильтра */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Стили для фильтра по дате */
+.date-filter-dropdown {
+  width: 320px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+  animation: slideInUp 0.2s ease-out;
+}
+
+.calendar-wrapper {
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.filter-calendar {
+  border: none;
+  background: transparent;
+}
+
+.filter-calendar ::ng-deep .ant-picker-calendar {
+  background: transparent;
+}
+
+.filter-calendar ::ng-deep .ant-picker-calendar-header {
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-calendar ::ng-deep .ant-picker-calendar-date {
+  border: none;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.filter-calendar ::ng-deep .ant-picker-calendar-date:hover {
+  background: rgba(22, 119, 255, 0.1);
+}
+
+.filter-calendar ::ng-deep .ant-picker-calendar-date-today {
+  background: rgba(22, 119, 255, 0.1);
+  border: 1px solid #1677ff;
+}
+
+.filter-calendar ::ng-deep .ant-picker-calendar-date-selected {
+  background: #1677ff;
+  color: #ffffff;
+}
+
+/* Адаптивность для фильтров */
+@media (max-width: 480px) {
+  .doc-num-filter-dropdown,
+  .date-filter-dropdown,
+  .cascade-filter-dropdown {
+    width: 280px;
+  }
+
+  .filter-header {
+    padding: 12px 16px 8px;
+  }
+
+  .filter-content {
+    padding: 16px;
+  }
+
+  .filter-actions {
+    flex-direction: column;
+  }
+
+  .reset-button,
+  .apply-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .state-collapse {
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 360px) {
+  .doc-num-filter-dropdown,
+  .date-filter-dropdown,
+  .cascade-filter-dropdown {
+    width: 260px;
+  }
+
+  .filter-header {
+    padding: 8px 12px 6px;
+  }
+
+  .filter-content {
+    padding: 12px;
+  }
+
+  .filter-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .reset-button,
+  .apply-button {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .state-collapse {
+    max-height: 120px;
+  }
+}
