@@ -30,6 +30,9 @@ import {
   DocumentParams,
   DocumentTypeFilter,
   FilterOption,
+  SubsystemOption,
+  DocTypeOption,
+  StatusOption,
   Scope,
   SortCriterion,
   SortDirection,
@@ -101,14 +104,14 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   tempTofkFilterValue: string | null = null;
 
   availableFilters: FilterOption[] = [];
-  subsystemFilterOptions: Array<{ text: string; value: string; byDefault?: boolean }> = [];
-  docTypeFiltersOptions: Array<{ text: string; value: string }> = [];
-  docStateFiltersOptions: Array<{ text: string; value: any }> = [];
-  // список всех выбранных фильтров
-  selectedOptions: SubsystemFilter[] = [];
+  subsystemOptions: SubsystemOption[] = [];
+  allDocTypeOptions: DocTypeOption[] = [];
+  allStatusOptions: StatusOption[] = [];
+  // доступные опции для селектов
+  docTypeFilterOptions: DocTypeOption[] = [];
+  statusFilterOptions: StatusOption[] = [];
 
   // Каскадные фильтры
-  filterVisible = false;
   dateFilterVisible = false;
   docNumFilterVisible = false;
   accountFilterVisible = false;
@@ -118,11 +121,6 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   subsystemFilterVisible = false;
   docTypeFilterVisible = false;
   statusFilterVisible = false;
-  tempSubsystem: string | null = null;
-  tempDocTypeIds: string[] = [];
-  tempDocStateMap: { [key: string]: string[] } = {};
-  cascDocTypeOptions: Array<{ text: string; value: string }> = [];
-  cascDocStateOptions: Array<{ docTypeId: string; docTypeName: string; states: string[] }> = [];
 
   // Свойства для связанных фильтров
   subsystemFilterValue: string | null = null;
@@ -131,10 +129,6 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   tempDocTypeFilter: string[] = [];
   statusFilterValue: string[] = [];
   tempStatusFilter: string[] = [];
-
-  // Опции для новых фильтров
-  docTypeFilterOptions: Array<{ text: string; value: string }> = [];
-  statusFilterOptions: Array<{ text: string; value: string }> = [];
 
   // Примененные фильтры (для сравнения)
   appliedFilters: AppliedFilters = {
@@ -369,13 +363,6 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.documentOpenService.openDocument(document);
   }
 
-  toSubsystemItem(opt: FilterOption): SubsystemFilter {
-    return {
-      subsystem: opt.subsystem,
-      documentTypes: []
-    };
-  }
-
   reloadAll(): void {
     this.resetAllFilters();
     this.loadDocuments();
@@ -495,7 +482,8 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   }
 
   getCurrentSubsystem(): string {
-    return this.getCurrentFilterValue(this.subsystemFilterValue);
+    const code = this.subsystemFilterValue;
+    return code ? (this.subsystemOptions.find(o => o.value === code)?.label || code) : '';
   }
 
   onSubsystemFilterOpen(): void {
@@ -504,17 +492,31 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   onTempSubsystemFilterChange(value: string | null): void {
     this.tempSubsystemFilter = value;
+    this.tempDocTypeFilter = [];
+    this.tempStatusFilter = [];
     this.updateDocTypeFilterOptions(value);
+    this.updateStatusFilterOptions([]);
   }
 
   applySubsystemFilter(): void {
     this.subsystemFilterValue = this.tempSubsystemFilter;
+    // при смене подсистемы очищаем связанные значения
+    this.docTypeFilterValue = [];
+    this.statusFilterValue = [];
+    this.updateDocTypeFilterOptions(this.subsystemFilterValue);
+    this.updateStatusFilterOptions([]);
     this.subsystemFilterVisible = false;
   }
 
   resetSubsystemFilter(): void {
     this.subsystemFilterValue = null;
     this.tempSubsystemFilter = null;
+    this.docTypeFilterValue = [];
+    this.tempDocTypeFilter = [];
+    this.statusFilterValue = [];
+    this.tempStatusFilter = [];
+    this.docTypeFilterOptions = [];
+    this.statusFilterOptions = [];
     this.subsystemFilterVisible = false;
   }
 
@@ -523,7 +525,11 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   }
 
   getCurrentDocType(): string {
-    return this.docTypeFilterValue.length > 0 ? this.docTypeFilterValue.join(', ') : '';
+    return this.docTypeFilterValue.length > 0
+      ? this.docTypeFilterValue
+          .map(id => this.allDocTypeOptions.find(o => o.value === id)?.label || id)
+          .join(', ')
+      : '';
   }
 
   onDocTypeFilterOpen(): void {
@@ -537,6 +543,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   applyDocTypeFilter(): void {
     this.docTypeFilterValue = [...this.tempDocTypeFilter];
+    this.updateStatusFilterOptions(this.docTypeFilterValue);
     this.docTypeFilterVisible = false;
   }
 
@@ -544,6 +551,9 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.docTypeFilterValue = [];
     this.tempDocTypeFilter = [];
     this.docTypeFilterVisible = false;
+    this.statusFilterValue = [];
+    this.tempStatusFilter = [];
+    this.updateStatusFilterOptions([]);
   }
 
   isStatusFilterActive(): boolean {
@@ -556,6 +566,7 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
 
   onStatusFilterOpen(): void {
     this.tempStatusFilter = [...this.statusFilterValue];
+    this.updateStatusFilterOptions(this.docTypeFilterValue);
   }
 
   onTempStatusFilterChange(values: string[]): void {
@@ -632,28 +643,6 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.documentOpenService.openDocument(document);
   }
 
-  private updateCascDocTypeOptions(subsystem: string): void {
-    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
-    this.cascDocTypeOptions = sub ? sub.docTypes.map(dt => ({ text: dt.docTypeName, value: dt.docTypeId })) : [];
-  }
-
-  private updateCascDocStateOptions(subsystem: string, docTypeIds: string[]): void {
-    this.cascDocStateOptions = [];
-    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
-    if (!sub) {
-      return;
-    }
-    sub.docTypes.forEach(dt => {
-      if (docTypeIds.includes(dt.docTypeId)) {
-        this.cascDocStateOptions.push({
-          docTypeId: dt.docTypeId,
-          docTypeName: dt.docTypeName,
-          states: [...dt.docStates].sort((a, b) => a.localeCompare(b))
-        });
-      }
-    });
-  }
-
   private isTextFilterActive(filterValue: string | null): boolean {
     return filterValue !== null && filterValue.trim() !== '';
   }
@@ -728,47 +717,23 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
-    this.docTypeFilterOptions = sub
-      ? sub.docTypes.map(dt => ({
-        text: dt.docTypeName,
-        value: dt.docTypeId
-      }))
-      : [];
+    this.docTypeFilterOptions = this.allDocTypeOptions
+      .filter(dt => dt.subsystem.value === subsystem);
   }
 
   /**
    * Обновляет опции фильтра статусов на основе выбранных типов документов
    */
   private updateStatusFilterOptions(docTypeIds: string[]): void {
-    this.statusFilterOptions = [];
-
-    if (docTypeIds.length === 0) {
+    const subsystem = this.tempSubsystemFilter || this.subsystemFilterValue;
+    if (!subsystem || docTypeIds.length === 0) {
+      this.statusFilterOptions = [];
       return;
     }
 
-    const selectedSubsystem = this.subsystemFilterValue;
-    if (!selectedSubsystem) {
-      return;
-    }
-
-    const sub = this.availableFilters
-      .find(f =>
-        f.subsystem === selectedSubsystem);
-    if (!sub) {
-      return;
-    }
-
-    const allStates = new Set<string>();
-    sub.docTypes.forEach(dt => {
-      if (docTypeIds.includes(dt.docTypeId)) {
-        dt.docStates.forEach(state => allStates.add(state));
-      }
-    });
-
-    this.statusFilterOptions = Array.from(allStates)
-      .sort((a, b) => a.localeCompare(b))
-      .map(state => ({ text: state, value: state }));
+    this.statusFilterOptions = this.allStatusOptions.filter(
+      st => st.subsystem.value === subsystem && docTypeIds.includes(st.docType.value)
+    );
   }
 
   /**
@@ -907,68 +872,50 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
   private updateFiltersFromResponse(filters: any): void {
     if (filters && filters.filterOptions) {
       this.availableFilters = filters.filterOptions;
-      // Выбор подсистем
-      const isOnlyOne = this.availableFilters.length === 1;
-      this.subsystemFilterOptions = this.availableFilters.map((dt: FilterOption) => ({
-        text: dt.subsystemName,
-        value: dt.subsystem,
-        byDefault: isOnlyOne
-      })) as Array<{ text: string; value: string; byDefault?: boolean }>;
-      // Автовыбор подсистемы только при отсутствии пользовательского выбора
-      if (isOnlyOne) {
-        const subsys = this.subsystemFilterOptions[0].value;
-        if (this.selectedOptions.length === 0) {
-          this.selectedOptions = this.availableFilters
-            .filter(elem => subsys === elem.subsystem)
-            .map(elem => this.toSubsystemItem(elem));
-        }
-        this.tempSubsystem = subsys;
-        this.updateDocTypeOptions(subsys);
-        this.updateCascDocTypeOptions(subsys);
-        const docTypeIds =
-          this.selectedOptions[0]?.documentTypes?.map(dt => dt.documentTypeId) || [];
-        if (docTypeIds.length > 0) {
-          this.updateDocStateOptions(subsys, docTypeIds);
-          this.updateCascDocStateOptions(subsys, docTypeIds);
-        }
+
+      this.subsystemOptions = [];
+      this.allDocTypeOptions = [];
+      this.allStatusOptions = [];
+
+      this.availableFilters.forEach(f => {
+        const subsystem: SubsystemOption = {
+          label: f.subsystemName,
+          value: f.subsystem
+        };
+        this.subsystemOptions.push(subsystem);
+
+        f.docTypes.forEach(dt => {
+          const docType: DocTypeOption = {
+            label: dt.docTypeName,
+            value: dt.docTypeId,
+            subsystem
+          };
+          this.allDocTypeOptions.push(docType);
+
+          dt.docStates.forEach(state => {
+            this.allStatusOptions.push({
+              label: state,
+              value: state,
+              subsystem,
+              docType
+            });
+          });
+        });
+      });
+
+      if (this.subsystemOptions.length === 1) {
+        const subsys = this.subsystemOptions[0].value;
+        this.subsystemFilterValue = this.subsystemFilterValue || subsys;
+        this.updateDocTypeFilterOptions(this.subsystemFilterValue);
       } else {
-        // При наличии нескольких подсистем фильтры типов и статусов очищаем
-        this.docTypeFiltersOptions = [];
-        this.docStateFiltersOptions = [];
-        this.cascDocTypeOptions = [];
-        this.cascDocStateOptions = [];
+        this.docTypeFilterOptions = [];
+        this.statusFilterOptions = [];
       }
     }
-
 
     if (filters && filters.sortable) {
       this.sortableColumns = filters.sortable;
     }
-  }
-
-  private updateDocTypeOptions(subsystem: string): void {
-    const sub = this.availableFilters.find(f => f.subsystem === subsystem);
-    this.docTypeFiltersOptions = sub
-      ? sub.docTypes.map(dt => ({ text: dt.docTypeName, value: dt.docTypeId }))
-      : [];
-  }
-
-  private updateDocStateOptions(subsystem: string, docTypeIds: string[]): void {
-    this.docStateFiltersOptions = [];
-    const sub = this.availableFilters
-      .find(f => f.subsystem === subsystem);
-    if (!sub) { return; }
-    sub.docTypes.forEach(dt => {
-      if (docTypeIds.includes(dt.docTypeId)) {
-        const states = [...dt.docStates].sort((a, b) => a.localeCompare(b));
-        states.forEach(state => {
-          this.docStateFiltersOptions.push({
-            text: `${dt.docTypeName}: ${state}`,
-            value: { docTypeId: dt.docTypeId, state: state }
-          });
-        });
-      }
-    });
   }
 
   private resetAllFilters(): void {
@@ -1002,20 +949,11 @@ export class DocumentTableComponent implements OnInit, OnDestroy {
     this.statusFilterValue = [];
     this.tempStatusFilter = [];
     this.statusFilterVisible = false;
+    this.subsystemOptions = [];
+    this.allDocTypeOptions = [];
+    this.allStatusOptions = [];
     this.docTypeFilterOptions = [];
     this.statusFilterOptions = [];
-
-    // Сброс старых каскадных фильтров (больше не используются)
-    this.subsystemFilterOptions = [];
-    this.docTypeFiltersOptions = [];
-    this.docStateFiltersOptions = [];
-    this.selectedOptions = [];
-    this.tempSubsystem = null;
-    this.tempDocTypeIds = [];
-    this.tempDocStateMap = {};
-    this.cascDocTypeOptions = [];
-    this.cascDocStateOptions = [];
-    this.filterVisible = false;
 
     // Сброс сортировки(пока условно)
     this.currentSort = [];

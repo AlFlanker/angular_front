@@ -122,3 +122,31 @@ export interface AppliedFilters {
   status: string[];
   date: Date | null;
 }
+
+// Опции для связанных фильтров в таблице документов
+export interface SubsystemOption {
+  /** Текст для отображения */
+  label: string;
+  /** Значение подсистемы */
+  value: string;
+}
+
+export interface DocTypeOption {
+  /** Текст для отображения */
+  label: string;
+  /** Идентификатор типа документа */
+  value: string;
+  /** Родительская подсистема */
+  subsystem: SubsystemOption;
+}
+
+export interface StatusOption {
+  /** Текст для отображения */
+  label: string;
+  /** Значение статуса */
+  value: string;
+  /** Родительская подсистема */
+  subsystem: SubsystemOption;
+  /** Родительский тип документа */
+  docType: DocTypeOption;
+}

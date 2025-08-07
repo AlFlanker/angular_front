@@ -497,8 +497,8 @@
                 [(ngModel)]="tempSubsystemFilter"
                 (ngModelChange)="onTempSubsystemFilterChange($event)"
                 class="filter-select">
-                @for (o of subsystemFilterOptions; track o) {
-                  <nz-option [nzValue]="o.value" [nzLabel]="o.text"></nz-option>
+                @for (o of subsystemOptions; track o.value) {
+                  <nz-option [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
                 }
               </nz-select>
             </div>
@@ -551,8 +551,8 @@
                 [(ngModel)]="tempDocTypeFilter"
                 (ngModelChange)="onTempDocTypeFilterChange($event)"
                 class="filter-select">
-                @for (o of docTypeFilterOptions; track o) {
-                 <nz-option [nzValue]="o.value" [nzLabel]="o.text"></nz-option>
+                @for (o of docTypeFilterOptions; track o.value) {
+                 <nz-option [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
                 }
               </nz-select>
             </div>
@@ -605,8 +605,8 @@
                 [(ngModel)]="tempStatusFilter"
                 (ngModelChange)="onTempStatusFilterChange($event)"
                 class="filter-select">
-                @for (o of statusFilterOptions; track o) {
-                 <nz-option [nzValue]="o.value" [nzLabel]="o.text"></nz-option>
+                @for (o of statusFilterOptions; track o.value) {
+                 <nz-option [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
                 }
               </nz-select>
             </div>
